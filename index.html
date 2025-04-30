@@ -4,106 +4,247 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>전시대 봉사 시간표 자동 배정 프로그램</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label, input, button {
+            margin: 5px 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        @media (max-width: 600px) {
+            .modal-content {
+                width: 90%;
+            }
+            input, button {
+                width: 100%;
+            }
+        }
+    </style>
 </head>
 <body>
     <h1>전시대 봉사 시간표 자동 배정 프로그램</h1>
     <form id="schedulerForm">
-        <label for="participants">참여자 (쉼표로 구분):</label><br>
-        <input type="text" id="participants" name="participants" size="50" placeholder="예: A, B, C, D, E, F"><br>
-        <label for="stands">전시대 개수:</label><br>
-        <input type="number" id="stands" name="stands" min="1"><br>
-        <label for="startTime">시작 시간:</label><br>
+        <label for="startTime">시작 시간:</label>
         <input type="time" id="startTime" name="startTime"><br>
-        <label for="endTime">마치는 시간:</label><br>
+        <label for="endTime">마치는 시간:</label>
         <input type="time" id="endTime" name="endTime"><br>
-        <label for="shiftDuration">교대 시간 (분):</label><br>
-        <input type="number" id="shiftDuration" name="shiftDuration" min="1" placeholder="예: 20"><br>
+        <label for="stands">전시대 개수:</label>
+        <input type="number" id="stands" name="stands" min="1"><br>
+        <button type="button" onclick="openModal()">참여자 선택</button>
+        <div id="selectedParticipants"></div>
         <button type="button" onclick="generateSchedule()">시간표 생성</button>
     </form>
     <div id="schedule"></div>
 
+    <!-- 모달 -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">×</span>
+            <h2>참여자 선택</h2>
+            <div id="participantList"></div>
+            <button onclick="confirmSelection()">선택 완료</button>
+        </div>
+    </div>
+
     <script>
-    function generateSchedule() {
-        // 참여자 입력 처리
-        const participants = document.getElementById("participants").value.split(",").map(name => name.trim());
-        if (participants.length % 2 !== 0) {
-            alert("참여자 수는 짝수여야 합니다.");
-            return;
-        }
+        const brothers = ["김기권", "김상연", "김은석", "김인기", "김철호", "박상익", "박원준", "박종화", "박진걸", "박희범", "박희종", "사영환", "서기원", "서정길", "양재은", "양진우", "이목영", "이선", "이종호", "이현석", "임종목", "임현수", "전종경", "전진해", "전필용", "정순도", "정종민", "정진수", "정해균"];
+        const sisters = ["강성임", "강승미", "강승희", "곽순호", "권영미", "권영숙", "권수진", "김경애", "김귀자", "김동임", "김복실", "김솔", "김영아", "김영애", "김영순", "김옥순A", "김옥순B", "김은희", "김인순", "김인희", "김정숙", "김춘조", "김희재", "문설형", "민규희", "박선아", "박순례", "박여자", "박은숙", "박현숙", "백경자", "변현숙", "서광옥", "서혜경", "손귀선", "송옥순", "신부지", "신연순", "심자인", "안영자", "양동순", "양지예", "양지은", "연선미", "용옥자", "유민지", "유순지", "우옥희", "이경순", "이경현", "이금덕", "이금자", "이명윤", "이병임", "이아영", "이애선", "이영자", "이영재", "이재희", "이지애", "이채은", "이화숙", "이희숙", "이희열", "임규환", "임귀녀", "임순자", "임애진", "임여진", "장평원", "정송은", "정옥연", "조금순", "조명자", "조인순", "최건자", "최명수", "최문숙", "최연진", "홍명순", "홍은희"];
+        const children = ["박시우", "양다솜", "이채은"];
+        const groups = ["동부집단", "서부집단", "남부집단", "북부집단", "연서집단", "연신내집단"];
+        const others = [];
 
-        // 전시대 수, 시간, 교대 시간 가져오기
-        const S = parseInt(document.getElementById("stands").value);
-        const startTime = document.getElementById("startTime").value;
-        const endTime = document.getElementById("endTime").value;
-        const shiftDuration = parseInt(document.getElementById("shiftDuration").value);
+        let selectedParticipants = [];
 
-        // 시간을 분 단위로 변환
-        const startMinutes = timeToMinutes(startTime);
-        const endMinutes = timeToMinutes(endTime);
-        if (startMinutes >= endMinutes) {
-            alert("시작 시간이 마치는 시간보다 늦을 수 없습니다.");
-            return;
-        }
-        const totalMinutes = endMinutes - startMinutes;
-        if (totalMinutes % shiftDuration !== 0) {
-            alert("총 시간이 교대 시간의 배수가 아닙니다.");
-            return;
-        }
-        const T = totalMinutes / shiftDuration;
+        function openModal() {
+            const modal = document.getElementById("modal");
+            const participantList = document.getElementById("participantList");
+            participantList.innerHTML = '';
 
-        // 참여자 짝짓기
-        const pairs = [];
-        for (let i = 0; i < participants.length; i += 2) {
-            pairs.push([participants[i], participants[i + 1]]);
-        }
-        const P = pairs.length;
-        if (P < S) {
-            alert("전시대 수보다 쌍이 적습니다.");
-            return;
-        }
+            const categories = [
+                { name: "형제", list: brothers },
+                { name: "자매", list: sisters },
+                { name: "자녀", list: children },
+                { name: "집단", list: groups },
+                { name: "기타", list: others }
+            ];
 
-        // 시간 슬롯 생성
-        const timeSlots = [];
-        for (let t = 0; t < T; t++) {
-            const slotStart = startMinutes + t * shiftDuration;
-            const slotEnd = slotStart + shiftDuration;
-            timeSlots.push({
-                start: minutesToTime(slotStart),
-                end: minutesToTime(slotEnd)
+            categories.forEach(category => {
+                const categoryDiv = document.createElement("div");
+                categoryDiv.innerHTML = `<h3>${category.name}</h3>`;
+                category.list.forEach(person => {
+                    const checkbox = document.createElement("input");
+                    checkbox.type = "checkbox";
+                    checkbox.value = person;
+                    checkbox.id = person;
+                    checkbox.checked = selectedParticipants.includes(person);
+                    const label = document.createElement("label");
+                    label.htmlFor = person;
+                    label.textContent = person;
+                    categoryDiv.appendChild(checkbox);
+                    categoryDiv.appendChild(label);
+                    categoryDiv.appendChild(document.createElement("br"));
+                });
+                participantList.appendChild(categoryDiv);
             });
+
+            modal.style.display = "block";
         }
 
-        // 시간표 생성
-        let scheduleHtml = '<table border="1"><thead><tr><th>시간대</th>';
-        for (let s = 0; s < S; s++) {
-            scheduleHtml += `<th>전시대 ${s + 1}</th>`;
+        function closeModal() {
+            document.getElementById("modal").style.display = "none";
         }
-        scheduleHtml += '</tr></thead><tbody>';
-        for (let t = 0; t < T; t++) {
-            scheduleHtml += `<tr><td>${timeSlots[t].start} - ${timeSlots[t].end}</td>`;
-            for (let s = 0; s < S; s++) {
-                const pairIndex = (t + s) % P;
-                const pair = pairs[pairIndex].join("-");
-                scheduleHtml += `<td>${pair}</td>`;
+
+        function confirmSelection() {
+            selectedParticipants = [];
+            const checkboxes = document.querySelectorAll("#participantList input[type=checkbox]:checked");
+            checkboxes.forEach(checkbox => {
+                selectedParticipants.push(checkbox.value);
+            });
+            document.getElementById("selectedParticipants").textContent = `선택된 참여자: ${selectedParticipants.join(", ")}`;
+            closeModal();
+        }
+
+        function generateSchedule() {
+            if (selectedParticipants.length < 2) {
+                alert("최소 2명 이상의 참여자를 선택해주세요.");
+                return;
             }
-            scheduleHtml += '</tr>';
+
+            const stands = parseInt(document.getElementById("stands").value);
+            const startTime = document.getElementById("startTime").value;
+            const endTime = document.getElementById("endTime").value;
+            const shiftDuration = 20; // 20분 고정
+
+            const startMinutes = timeToMinutes(startTime);
+            const endMinutes = timeToMinutes(endTime);
+            const totalMinutes = endMinutes - startMinutes;
+            const numSlots = totalMinutes / shiftDuration;
+
+            if (numSlots <= 0 || totalMinutes % shiftDuration !== 0) {
+                alert("유효하지 않은 시간 설정입니다. 20분 간격으로 설정해주세요.");
+                return;
+            }
+
+            const shuffledParticipants = shuffleArray([...selectedParticipants]);
+            const pairs = [];
+            for (let i = 0; i < shuffledParticipants.length; i += 2) {
+                if (i + 1 < shuffledParticipants.length) {
+                    pairs.push([shuffledParticipants[i], shuffledParticipants[i + 1]]);
+                } else {
+                    pairs.push([shuffledParticipants[i]]);
+                }
+            }
+
+            if (pairs.length < stands) {
+                alert("전시대 수보다 쌍이 적습니다.");
+                return;
+            }
+
+            const timeSlots = [];
+            for (let t = 0; t < numSlots; t++) {
+                const slotStart = startMinutes + t * shiftDuration;
+                const slotEnd = slotStart + shiftDuration;
+                timeSlots.push({
+                    start: minutesToTime(slotStart),
+                    end: minutesToTime(slotEnd)
+                });
+            }
+
+            let scheduleHtml = '<table border="1"><thead><tr><th>시간대</th>';
+            for (let s = 0; s < stands; s++) {
+                scheduleHtml += `<th>전시대 ${s + 1}</th>`;
+            }
+            scheduleHtml += '</tr></thead><tbody>';
+            for (let t = 0; t < numSlots; t++) {
+                scheduleHtml += `<tr><td>${timeSlots[t].start} - ${timeSlots[t].end}</td>`;
+                for (let s = 0; s < stands; s++) {
+                    const pairIndex = (t + s) % pairs.length;
+                    const pair = pairs[pairIndex].join("-");
+                    scheduleHtml += `<td>${pair}</td>`;
+                }
+                scheduleHtml += '</tr>';
+            }
+            scheduleHtml += '</tbody></table>';
+            document.getElementById("schedule").innerHTML = scheduleHtml;
         }
-        scheduleHtml += '</tbody></table>';
-        document.getElementById("schedule").innerHTML = scheduleHtml;
-    }
 
-    // 시간 문자열을 분 단위로 변환
-    function timeToMinutes(timeStr) {
-        const [hours, minutes] = timeStr.split(":").map(Number);
-        return hours * 60 + minutes;
-    }
+        function timeToMinutes(timeStr) {
+            const [hours, minutes] = timeStr.split(":").map(Number);
+            return hours * 60 + minutes;
+        }
 
-    // 분 단위를 시간 문자열로 변환
-    function minutesToTime(minutes) {
-        const hours = Math.floor(minutes / 60);
-        const mins = minutes % 60;
-        return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
-    }
+        function minutesToTime(minutes) {
+            const hours = Math.floor(minutes / 60);
+            const mins = minutes % 60;
+            return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
     </script>
 </body>
 </html>
