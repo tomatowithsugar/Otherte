@@ -2,1591 +2,1946 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>구역배정</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>불광서부회중 전시대 신청</title>
+    <link rel="apple-touch-icon" href="apple-touch-icon_v3.png">
+    <link rel="icon" type="image/png" href="favicon-512x512_v3.png">
+
+    <!-- Firebase SDK -->
+    <script type="module">import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, getDocs, query, where, onSnapshot, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+        // Firebase 설정
+        const firebaseConfig = {
+            apiKey: "AIzaSyCUe4dXiwGiMsKtMCQfLVScx9iM4sEwF50",
+            authDomain: "cart-witnessing-404c0.firebaseapp.com",
+            projectId: "cart-witnessing-404c0",
+            storageBucket: "cart-witnessing-404c0.firebasestorage.app",
+            messagingSenderId: "616001042576",
+            appId: "1:616001042576:web:314fe2268c8fffe82a8015",
+            measurementId: "G-HT3T8YS1MW"
+        };
+
+        // Firebase 초기화
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // 전역에서 사용할 수 있도록 window 객체에 저장
+        window.firebaseApp = app;
+        window.db = db;
+        window.firestoreFunctions = {
+            collection,
+            addDoc,
+            getDocs,
+            query,
+            where,
+            onSnapshot,
+            deleteDoc,
+            doc
+        };
+
+        // DOM이 로드된 후 실행
+        window.addEventListener('DOMContentLoaded', function () {
+            window.initializeApp();
+        });</script>
+
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        * {
             margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             padding: 20px;
-            background: #f5f5f7;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .login-page {
+            display: block;
+        }
+
+        .main-page, .admin-page {
+            display: none;
+        }
+
+        .login-form {
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
             font-size: 16px;
         }
-        h1 { color: #007AFF; margin-bottom: 25px; font-size: 1.8em; }
-        .zone-list { gap: 15px; margin: 20px 0; }
-        .zone-item {
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+            input[type="text"]:focus, select:focus {
+                outline: none;
+                border-color: #667eea;
+            }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+            .btn:hover {
+                transform: translateY(-2px);
+            }
+
+            .btn.secondary {
+                background: #6c757d;
+                background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+            }
+
+            .btn.danger {
+                background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+                padding: 8px 16px;
+                width: auto;
+                font-size: 14px;
+                margin: 0;
+            }
+
+            .btn.success {
+                background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+                padding: 12px 20px;
+                width: auto;
+                font-size: 16px;
+                margin: 0 5px;
+            }
+
+            .btn.admin {
+                background: linear-gradient(135deg, #fd7e14 0%, #e63946 100%);
+            }
+
+            .btn.small {
+                padding: 12px 20px;
+                font-size: 16px;
+                width: auto;
+            }
+
+            .btn:disabled {
+                background: #ccc;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+        .user-info {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #667eea;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .admin-info {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fd7e14;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .admin-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .day-selection {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .zone-selection {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .day-option, .zone-option {
+            position: relative;
+        }
+
+            .day-option input[type="radio"], .zone-option input[type="radio"] {
+                display: none;
+            }
+
+        .day-label, .zone-label {
+            display: block;
+            padding: 15px 10px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            font-weight: 500;
+        }
+
+        .zone-label {
+            padding: 20px 15px;
+        }
+
+        .day-option input[type="radio"]:checked + .day-label,
+        .zone-option input[type="radio"]:checked + .zone-label {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .day-label:hover, .zone-label:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .date-info {
+            font-size: 11px;
+            margin-top: 3px;
+            color: #999;
+            font-weight: normal;
+        }
+
+        .day-option input[type="radio"]:checked + .day-label .date-info {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .capacity-info {
+            font-size: 12px;
+            margin-top: 5px;
+            text-align: center;
+            color: #888;
+        }
+
+        .zone-label .capacity-info {
+            font-size: 14px;
+        }
+
+        .applicants-list {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+            .applicants-list h3 {
+                margin-bottom: 15px;
+                color: #333;
+            }
+
+        .day-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .day-title {
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .zone-applicants {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #667eea;
+        }
+
+        .zone-name {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .name-tag {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            margin: 2px 4px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .applicant-names {
+            line-height: 1.8;
+        }
+
+        .applicant-names {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .zone-selection-container {
+            display: none;
+        }
+
+            .zone-selection-container.show {
+                display: block;
+            }
+
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 40px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+            .modal-content.large {
+                max-width: 800px;
+            }
+
+        .close {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+            .close:hover {
+                color: #000;
+            }
+
+        .modal h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        /* 신청 취소 모달 스타일 */
+        .cancel-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .cancel-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 1px solid #e1e5e9;
+        }
+
+        .cancel-info {
+            flex: 1;
+        }
+
+        .cancel-day {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 16px;
+        }
+
+        .cancel-details {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .no-applications {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        /* 관리자 모달 스타일 */
+        .admin-form {
+            margin-bottom: 20px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+            .form-row.full {
+                grid-template-columns: 1fr;
+            }
+
+        .admin-action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        /* 데이터 통계 스타일 */
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .month-navigation {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .month-nav-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+            .month-nav-btn:hover {
+                background: #5a6fd8;
+            }
+
+        .current-month {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .stats-content {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .zone-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .zone-stat-card {
             background: white;
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-bottom: 15px;
         }
-        .zone-item h4 {
-            margin: 0 0 5px 0;
-            font-size: 1.2em;
-        }
-        .zone-info {
-            font-size: 0.9em;
-            color: #666;
+
+        .zone-stat-title {
+            font-weight: 600;
+            color: #333;
             margin-bottom: 10px;
         }
-        .zone-item .buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 10px;
+
+        .zone-stat-bar {
+            background: #e9ecef;
+            border-radius: 5px;
+            height: 8px;
+            margin-bottom: 5px;
         }
-        .zone-item button {
-            padding: 8px 12px;
-            font-size: 0.9em;
-            border-radius: 20px;
-            border: none;
-            cursor: pointer;
-            color: white;
-        }
-        .assign-btn {
-            background: #007AFF;
-        }
-        .map-btn {
-            background: #34C759;
-        }
-        .delete-btn {
-            background: #FF3B30;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-size: 0.9em;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5);
-            padding: 20px;
-            z-index: 3000;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            max-width: 500px;
-            max-height: 80vh;
-            margin: 20px auto;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-        }
-        @media (max-width: 600px) {
-            .modal-content {
-                width: 100%;
-                height: 100%;
-                margin: 0;
-                padding: 20px;
-                border-radius: 0;
-            }
-        }
-        .selected-area {
-            margin: 5px 0;
-            padding: 5px 0;
-        }
-        .selected-area h4 {
-            font-size: 0.9em;
-            margin: 0 0 5px 0;
-        }
-        #selectedNames {
-            color: #FFA500;
-            font-weight: bold;
-            min-height: 16px;
-            font-size: 0.85em;
-        }
-        .selected-name-tag {
-            display: inline-block;
-            margin: 2px 5px 2px 0;
-            padding: 2px 8px;
-            border-radius: 12px;
-            background: #FFE8CC;
-            color: #FFA500;
-            cursor: pointer;
-            font-size: 0.85em;
-        }
-        .selected-name-tag:hover {
-            background: #FFCC99;
-        }
-        .name-tag {
-            display: inline-block;
-            margin: 5px;
-            padding: 10px 15px;
-            border-radius: 20px;
-            border: 1px solid #e0e0e0;
-            cursor: pointer;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            font-size: 1em;
-        }
-        .name-tag.selected { background: #007AFF; color: white; }
-        .name-tag.assigned { background: #f0f0f0; color: #999; }
-        #searchInput {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            background-color: #f9f9f9;
-        }
-        button {
-            padding: 10px 20px;
-            background: #007AFF;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-        .add-custom-btn { background: #34C759 !important; }
-        .edit-badge {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            color: #666;
-            font-size: 0.9em;
-        }
-        #nameContainer {
-            overflow-y: auto;
-            flex-grow: 1;
-            padding: 10px 0;
-        }
-        .summary-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
+
+        .zone-stat-fill {
+            background: #667eea;
+            border-radius: 5px;
             height: 100%;
-            background: white;
-            z-index: 2000;
-            overflow: auto;
+            transition: width 0.3s ease;
         }
-        .summary-content {
-            padding: 40px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .close-summary {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            font-size: 30px;
-            cursor: pointer;
-            color: #ff4444;
-        }
-        #summaryTable {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        #summaryTable th,
-        #summaryTable td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        #summaryTable th {
-            background-color: #007AFF;
-            color: white;
-        }
-        #summaryTable tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        .history-controls {
-            position: absolute;
-            top: 90px;
-            left: 150px;
-            background: white;
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            z-index: 1000;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-        .edit-mode-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            background: #FF9500 !important;
-            width: 80px;
-            height: 40px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+
+        .zone-stat-text {
             font-size: 14px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            transition: background 0.3s;
-            z-index: 1000;
+            color: #666;
         }
-        .edit-mode-btn.active {
-            background: #FF3B30 !important;
+
+        /* 사용자 관리 스타일 */
+        .user-list {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            max-height: 400px;
+            overflow-y: auto;
         }
-        .edit-mode-btn span {
-            margin-left: 5px;
-        }
-        button:disabled {
-            background: #ddd !important;
-            cursor: not-allowed;
-        }
-        .summary-button {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #007AFF;
-            color: white;
-            padding: 15px 20px;
-            border-radius: 50px;
-            cursor: pointer;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            z-index: 1000;
-        }
-        .zones-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+
+            .user-list h3 {
+                margin-bottom: 15px;
+                color: #333;
+            }
+
+        .user-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
             background: white;
-            z-index: 2000;
-            overflow: auto;
+            border-radius: 10px;
+            border: 1px solid #e1e5e9;
         }
-        .zones-content {
-            padding: 40px;
-            max-width: 800px;
-            margin: 0 auto;
-            position: relative;
-        }
-        .close-zones {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            font-size: 30px;
-            cursor: pointer;
-            color: #ff4444;
-        }
-        #zonesTable {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            overflow-x: auto;
-            display: block;
-        }
-        #zonesTable th,
-        #zonesTable td {
-            border: 1px solid #ddd;
-            padding: 12px;
-            text-align: left;
-        }
-        #zonesTable th {
-            background-color: #007AFF;
-            color: white;
-        }
-        #zonesTable tr:nth-child(even) {
-            background-color: #f9f9f9;
-        }
-        #zonesTable tr.highlight {
-            background-color: #FFFF99 !important;
-        }
-        #zonesTable tr {
-            cursor: pointer;
-        }
-        #zonesTable tr.disabledINDEX: 4 disabled {
-            background-color: #f0f0f0;
-            cursor: not-allowed;
-        }
-        #zonesTable tr.selected-row {
-            background-color: #007AFF !important;
-            color: white;
-            font-weight: bold;
-        }
-        .personal-zone, .household-count, .recent-visit, .zone-length {
-            font-size: 0.85em;
-            color: #666;
-            margin-top: -2px;
-            line-height: 1.2;
-        }
-        .add-zones-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #34C759;
-            color: white;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            cursor: pointer;
-            z-index: 2100;
-        }
-        .personal-zone-info {
-            font-size: 0.8em;
-            color: #666;
-            margin-left: 5px;
-        }
-        .checkbox-container {
-            margin: 10px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .checkbox-container label {
-            font-size: 0.9em;
+
+        .user-name {
+            font-weight: 600;
             color: #333;
-        }
-        .filter-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin: 10px 0;
-        }
-        .filter-btn {
-            padding: 8px 12px;
-            font-size: 0.9em;
-            border-radius: 20px;
-            border: none;
-            background: #e0e0e0;
-            color: #333;
-            cursor: pointer;
-            transition: background 0.3s, color 0.3s;
-        }
-        .filter-btn.active {
-            background: #007AFF;
-            color: white;
-        }
-        .filter-btn:hover:not(.active) {
-            background: #d0d0d0;
         }
     </style>
 </head>
 <body>
-    <h1>구역배정 프로그램</h1>
-    <button onclick="addZone()">+ 새 구역 추가</button>
-    <div class="zone-list" id="zoneList"></div>
+    <div class="container">
+        <!-- 로그인 페이지 -->
+        <div class="login-page" id="loginPage">
+            <h1>불광서부회중<br>전시대 봉사 신청</h1>
 
-    <!-- 모달 -->
-<div class="modal" id="assignModal">
-    <div class="modal-content">
-        <h3 id="modalTitle"></h3>
-        <div class="checkbox-container">
-            <input type="checkbox" id="allowMultipleAssignments">
-            <label for="allowMultipleAssignments">동일 인원 다중 배정 허용</label>
+            <div class="login-form">
+                <div class="form-group">
+                    <label for="loginName">이름</label>
+                    <input type="text" id="loginName" placeholder="이름을 입력하세요" required>
+                </div>
+                <button type="button" class="btn" onclick="login()">확인</button>
+            </div>
         </div>
-        <input
-            type="text" id="searchInput" placeholder="🔍 이름 검색" onkeyup="filterNames()">
-        <div class="filter-buttons">
-            <button class="filter-btn active" onclick="setCategoryFilter('all')">전체</button>
-            <button class="filter-btn" onclick="setCategoryFilter('형제')">형제</button>
-            <button class="filter-btn" onclick="setCategoryFilter('자매')">자매</button>
-            <button class="filter-btn" onclick="setCategoryFilter('집단')">집단</button>
-            <button class="filter-btn" onclick="setCategoryFilter('기타')">기타</button>
-        </div>
-        <div class="selected-area">
-            <h4>선택한 인원 (<span id="selectedCount">0</span>명)</h4>
-            <div id="selectedNames"></div>
-        </div>
-        <div id="nameContainer"></div>
-        <div style="margin-top:20px; display: flex; gap: 10px; justify-content: flex-end;">
-            <button onclick="confirmAssignment()">완료</button>
-            <button onclick="closeModal()">취소</button>
-            <button class="add-custom-btn" onclick="addCustomPerson()">+ 직접 추가</button>
-        </div>
-        </div>
-    </div>
 
-    <!-- 부가 기능 영역 -->
-    <div class="history-controls">
-        <input type="date" id="historyDate">
-        <button onclick="showZonesList()">구역리스트</button>
-    </div>
-    <button class="edit-mode-btn" id="editModeBtn" onclick="toggleEditMode()" aria-label="수정 모드 토글">수정</button>
+        <!-- 일반 사용자 메인 페이지 -->
+        <div class="main-page" id="mainPage">
+            <h1>불광서부회중<br>전시대 봉사 신청</h1>
 
-    <!-- 요약 화면 -->
-    <div id="summaryModal" class="summary-modal">
-        <div class="summary-content">
-            <span class="close-summary" onclick="closeSummary()">×</span>
-            <h2>전체 배정 현황</h2>
-            <table id="summaryTable">
-                <thead>
-                    <tr><th>구역</th><th>인원</th></tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div class="user-info" id="userInfo"></div>
+
+            <div class="action-buttons">
+                <button type="button" class="btn" onclick="openRegistrationModal()">전시대 봉사 신청</button>
+                <button type="button" class="btn secondary" onclick="openCancelModal()">신청 취소</button>
+            </div>
+        </div>
+
+        <!-- 관리자 페이지 -->
+        <div class="admin-page" id="adminPage">
+            <h1>관리자 모드</h1>
+
+            <div class="admin-info">관리자님 환영합니다!</div>
+
+            <div class="admin-actions">
+                <button type="button" class="btn admin" onclick="openUserManagementModal()">사용자 관리</button>
+                <button type="button" class="btn admin" onclick="openZoneManagementModal()">구역 관리</button>
+                <button type="button" class="btn secondary" onclick="openStatsModal()">데이터 통계</button>
+            </div>
+
+        </div>
+
+        <!-- 신청 현황 -->
+        <div class="applicants-list">
+            <h3>신청 현황</h3>
+            <div id="applicantsList"></div>
         </div>
     </div>
 
-    <!-- 구역 목록 모달 -->
-    <div id="zonesModal" class="zones-modal">
-        <div class="zones-content">
-            <span class="close-zones" onclick="closeZones()">×</span>
-            <h2>구역 목록</h2>
-            <table id="zonesTable">
-                <thead>
-                    <tr><th>구역 번호</th><th>구역 명</th><th>최근 봉사 날짜</th></tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button class="add-zones-btn" onclick="addSelectedZones()">+</button>
-        </div>
-    </div>
+    <!-- 신청 모달 -->
+    <div id="registrationModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeRegistrationModal()">&times;</span>
+            <h2>전시대 봉사 신청</h2>
 
-    <!-- 요약 버튼 -->
-    <div class="summary-button" onclick="showSummary()">요약 보기</div>
-    <div class="modal" id="mapModal">
-        <div class="modal-content" style="height:85vh;">
-            <button class="delete-btn" onclick="closeMap()" style="position:absolute; right:15px; top:15px;">닫기</button>
-            <h3 id="mapModalTitle"></h3>
-            <div id="mapContainer" style="width:100%; height:90%; margin-top:15px;"></div>
-        </div>
-    </div>
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-
-    <script>
-        // Firebase 설정
-        const firebaseConfig = {
-            apiKey: "AIzaSyCv5Za0pq9okmTgorjPuZHiJIhkgAieVPY",
-            authDomain: "assignment-1bf57.firebaseapp.com",
-            projectId: "assignment-1bf57",
-            storageBucket: "assignment-1bf57.firebasestorage.app",
-            messagingSenderId: "609185997879",
-            appId: "1:609185997879:web:e1932a4a1e959c1b088bb2",
-            measurementId: "G-TEP0FST75C"
-        };
-
-        // 초기화
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        // 데이터 구조
-        let currentZone = null;
-        let selectedNames = [];
-        let assignedPeople = [];
-        let assignments = {};
-        let isEditMode = false;
-        let recentVisits = {};
-        let selectedZones = [];
-        let currentCategoryFilter = 'all'; // Track current category filter
-
-        // 편집 가능 여부 체크
-        function isEditableDate() {
-            if (isEditMode) return true;
-            const now = new Date();
-            const tzOffset = now.getTimezoneOffset() * 60000;
-            const today = new Date(now - tzOffset).toISOString().split('T')[0];
-            const selectedDate = document.getElementById('historyDate').value;
-            return selectedDate >= today;
-        }
-
-        // 수정 모드 토글
-        function toggleEditMode() {
-            isEditMode = !isEditMode;
-            const editBtn = document.getElementById('editModeBtn');
-            editBtn.classList.toggle('active', isEditMode);
-            updateUIState();
-        }
-
-        // 수정 모드 버튼 표시/숨김
-        function updateEditModeButtonVisibility() {
-            const now = new Date();
-            const tzOffset = now.getTimezoneOffset() * 60000;
-            const today = new Date(now - tzOffset).toISOString().split('T')[0];
-            const selectedDate = document.getElementById('historyDate').value;
-            const editBtn = document.getElementById('editModeBtn');
-            editBtn.style.display = selectedDate < today ? 'inline-block' : 'none';
-            if (selectedDate >= today) {
-                isEditMode = false;
-            }
-        }
-
-        // UI 상태 업데이트
-        function updateUIState() {
-            const editable = isEditableDate();
-            document.querySelector('button[onclick="addZone()"]').disabled = !editable;
-            document.querySelectorAll('.zone-item button').forEach(btn => {
-                if (btn.className !== 'map-btn') {
-                    btn.disabled = !editable;
-                }
-            });
-        }
-
-        // 초기 로드
-        document.addEventListener('DOMContentLoaded', async () => {
-            const now = new Date();
-            const tzOffset = now.getTimezoneOffset() * 60000;
-            const today = new Date(now - tzOffset).toISOString().split('T')[0];
-            const dateInput = document.getElementById('historyDate');
-            dateInput.value = today;
-            
-            dateInput.addEventListener('change', async () => {
-                await loadHistory();
-                await loadRecentVisits();
-                updateEditModeButtonVisibility();
-                updateUIState();
-            });
-            
-            await loadHistory();
-            await loadRecentVisits();
-            updateEditModeButtonVisibility();
-            updateUIState();
-        });
-
-        // 최근 방문 데이터 불러오기
-        async function loadRecentVisits() {
-            recentVisits = {};
-            const now = new Date();
-            const tzOffset = now.getTimezoneOffset() * 60000;
-            const today = new Date(now - tzOffset).toISOString().split('T')[0];
-            const historySnapshot = await db.collection('history')
-                .orderBy('timestamp', 'desc')
-                .get();
-
-            historySnapshot.forEach(doc => {
-                const date = doc.id;
-                if (date !== today) {
-                    const zones = doc.data().zones || {};
-                    Object.keys(zones).forEach(zone => {
-                        if (!recentVisits[zone] || new Date(recentVisits[zone]) < new Date(date)) {
-                            recentVisits[zone] = date;
-                        }
-                    });
-                }
-            });
-            initZones();
-        }
-
-        // 구역 추가
-        function addZone() {
-            if (!isEditableDate()) return alert("과거 날짜는 수정할 수 없습니다");
-            const zone = prompt("구역 번호 입력 (1-268)");
-            if (!zone || zone < 1 || zone > 268) return alert("1-268 사이 숫자 입력");
-            
-            if (!assignments[zone]) assignments[zone] = [];
-            initZones();
-        }
-
-        // 선택한 구역 추가
-        async function addSelectedZones() {
-            if (!isEditableDate()) return alert("과거 날짜는 수정할 수 없습니다");
-            if (selectedZones.length === 0) return alert("추가할 구역을 선택하세요.");
-
-            selectedZones.forEach(zone => {
-                if (!assignments[zone]) assignments[zone] = [];
-            });
-
-            const date = document.getElementById('historyDate').value;
-            await db.collection('history').doc(date).set({
-                zones: assignments,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            selectedZones = [];
-            initZones();
-            closeZones();
-        }
-
-        // 모달 열기
-        function openAssignModal(zone) {
-            if (!isEditableDate()) return alert("과거 날짜는 수정할 수 없습니다");
-            currentZone = zone;
-            selectedNames = [...(assignments[zone] || [])];
-            const zoneName = zoneData[zone] ? ` (${zoneData[zone]})` : '';
-            document.getElementById('modalTitle').textContent = `구역 ${zone}${zoneName} 배정`;
-            document.getElementById('allowMultipleAssignments').checked = false;
-            currentCategoryFilter = 'all'; // Reset to 'all' when opening modal
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent === '전체');
-            });
-            document.getElementById('assignModal').style.display = 'block';
-            updateSelectedDisplay();
-            renderNames();
-        }
-
-        // 카테고리 필터 설정
-        function setCategoryFilter(category) {
-            currentCategoryFilter = category;
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.textContent === (category === 'all' ? '전체' : category));
-            });
-            renderNames();
-            filterNames();
-        }
-
-        // 이름 렌더링
-        function renderNames() {
-            const allowMultiple = document.getElementById('allowMultipleAssignments').checked;
-            let html = '';
-            const categories = currentCategoryFilter === 'all' 
-                ? Object.entries(volunteers)
-                : Object.entries(volunteers).filter(([type]) => type === currentCategoryFilter);
-
-            for (const [type, names] of categories) {
-                html += `<h4>${type}</h4>`;
-                html += names.map(name => `
-                    <div class="name-tag 
-                        ${!allowMultiple && assignedPeople.includes(name) && !selectedNames.includes(name) ? 'assigned' : ''}
-                        ${selectedNames.includes(name) ? 'selected' : ''}"
-                        onclick="${!allowMultiple && assignedPeople.includes(name) && !selectedNames.includes(name) ? 
-                            'alert(\"이미 배정됨!\")' : 'toggleSelect(this)'}" 
-                        style="cursor: ${!allowMultiple && assignedPeople.includes(name) && !selectedNames.includes(name) ? 'not-allowed' : 'pointer'}">
-                        ${name}
+            <form id="registrationForm">
+                <div class="form-group">
+                    <label>요일 선택</label>
+                    <div class="day-selection">
+                        <div class="day-option">
+                            <input type="radio" id="monday" name="day" value="월요일">
+                            <label for="monday" class="day-label" data-day="월요일">
+                                월요일
+                                <div class="date-info" id="monday-date"></div>
+                            </label>
+                        </div>
+                        <div class="day-option">
+                            <input type="radio" id="tuesday" name="day" value="화요일">
+                            <label for="tuesday" class="day-label" data-day="화요일">
+                                화요일
+                                <div class="date-info" id="tuesday-date"></div>
+                            </label>
+                        </div>
+                        <div class="day-option">
+                            <input type="radio" id="wednesday" name="day" value="수요일">
+                            <label for="wednesday" class="day-label" data-day="수요일">
+                                수요일
+                                <div class="date-info" id="wednesday-date"></div>
+                            </label>
+                        </div>
+                        <div class="day-option">
+                            <input type="radio" id="thursday" name="day" value="목요일">
+                            <label for="thursday" class="day-label" data-day="목요일">
+                                목요일
+                                <div class="date-info" id="thursday-date"></div>
+                            </label>
+                        </div>
+                        <div class="day-option">
+                            <input type="radio" id="friday" name="day" value="금요일">
+                            <label for="friday" class="day-label" data-day="금요일">
+                                금요일
+                                <div class="date-info" id="friday-date"></div>
+                            </label>
+                        </div>
+                        <div class="day-option">
+                            <input type="radio" id="saturday" name="day" value="토요일">
+                            <label for="saturday" class="day-label" data-day="토요일">
+                                토요일
+                                <div class="date-info" id="saturday-date"></div>
+                            </label>
+                        </div>
                     </div>
-                `).join('');
-            }
-            
-            document.getElementById('nameContainer').innerHTML = html || '<p>해당 카테고리에 인원이 없습니다.</p>';
-            filterNames();
-        }
+                </div>
 
-        // 체크박스 변경 시 이름 목록 새로고침
-        document.getElementById('allowMultipleAssignments').addEventListener('change', renderNames);
+                <div class="form-group zone-selection-container" id="zoneSelectionContainer">
+                    <label>구역 선택</label>
+                    <div class="zone-selection" id="zoneSelection">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                </div>
 
-        // 선택 토글
-        function toggleSelect(btn) {
-            const allowMultiple = document.getElementById('allowMultipleAssignments').checked;
-            const name = btn.innerText;
-            if (!allowMultiple && assignedPeople.includes(name) && !selectedNames.includes(name)) return;
-            btn.classList.toggle('selected');
-            selectedNames = selectedNames.includes(name) ? 
-                selectedNames.filter(n => n !== name) : 
-                [...selectedNames, name];
-            updateSelectedDisplay();
-        }
+                <button type="submit" class="btn">신청하기</button>
+            </form>
+        </div>
+    </div>
 
-        // 선택된 이름 제거
-        function removeSelectedName(name) {
-            selectedNames = selectedNames.filter(n => n !== name);
-            renderNames(); // Re-render to update .selected classes
-            updateSelectedDisplay();
-        }
+    <!-- 신청 취소 모달 -->
+    <div id="cancelModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCancelModal()">&times;</span>
+            <h2>신청 취소</h2>
 
-        // 선택 상태 업데이트
-        function updateSelectedDisplay() {
-            const selectedNamesDiv = document.getElementById('selectedNames');
-            selectedNamesDiv.innerHTML = selectedNames.length > 0 
-                ? selectedNames.map(name => `
-                    <span class="selected-name-tag" onclick="removeSelectedName('${name}')">${name}</span>
-                `).join('')
-                : "선택된 인원 없음";
-            document.getElementById('selectedCount').textContent = selectedNames.length;
-        }
+            <div id="cancelList" class="cancel-list">
+                <!-- 신청 내역이 여기에 표시됩니다 -->
+            </div>
+        </div>
+    </div>
 
-        // 직접 추가
-        function addCustomPerson() {
-            const name = prompt("추가할 이름 입력");
-            if (name) {
-                volunteers.기타.push(name);
-                renderNames();
-                filterNames();
-            }
-        }
+    <!-- 관리자 모달 -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAdminModal()">&times;</span>
+            <h2>신청 관리</h2>
 
-        // 검색 필터
-        function filterNames() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            document.querySelectorAll('.name-tag').forEach(tag => {
-                tag.style.display = tag.innerText.toLowerCase().includes(term) ? 'inline-block' : 'none';
-            });
-        }
+            <div class="admin-form">
+                <div class="form-group">
+                    <label for="adminUserSelect">사용자 선택</label>
+                    <select id="adminUserSelect">
+                        <option value="">사용자를 선택하세요</option>
+                        <!-- 사용자 목록은 JS에서 동적으로 채워짐 -->
+                    </select>
+                </div>
 
-        // 데이터 저장
-        async function confirmAssignment() {
-            if (!isEditableDate()) return alert("과거 날짜는 수정할 수 없습니다");
-            const allowMultiple = document.getElementById('allowMultipleAssignments').checked;
-            
-            if (!allowMultiple) {
-                assignedPeople = assignedPeople.filter(n => !assignments[currentZone]?.includes(n));
-                assignedPeople.push(...selectedNames);
-            } else {
-                assignedPeople = [].concat(...Object.values(assignments));
-                assignedPeople.push(...selectedNames);
-                assignedPeople = [...new Set(assignedPeople)];
-            }
-            
-            assignments[currentZone] = selectedNames;
+                <div class="form-group">
+                    <label for="adminAction">작업</label>
+                    <select id="adminAction">
+                        <option value="">작업을 선택하세요</option>
+                        <option value="assign">임의 배정</option>
+                        <option value="cancel">임의 취소</option>
+                    </select>
+                </div>
 
-            const date = document.getElementById('historyDate').value;
-            await db.collection('history').doc(date).set({
-                zones: assignments,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            });
+                <div class="form-group" id="adminDayZoneRow" style="display: none;">
+                    <label>요일 선택</label>
+                    <div class="day-selection">
+                        <div class="day-option">
+                            <input type="radio" id="admin-monday" name="admin-day" value="월요일">
+                            <label for="admin-monday" class="day-label" data-day="월요일">
+                                월요일
+                                <div class="date-info" id="admin-monday-date"></div>
+                            </label>
+                        </div>
+                        <div class="day-option">
+                            <input type="radio" id="admin-tuesday" name="admin-day" value="화요일">
+                            <label for="admin-tuesday" class="day-label" data-day="화요일">
+                                화요일
+                                <div class="date-info" id="admin-tuesday-date"></div>
+                            </label>
+                        </div>
+                        <div class="day-option">
+                            <input type="radio" id="admin-wednesday" name="admin-day" value="수요일">
+                            <label for="admin-wednesday" class="day-label" data-day="수요일">
+                                수요일
+                                <div class="date-info" id="admin-wednesday-date"></div>
+                            </label>
+                        </div>
+                        <div class="day-option">
+                            <input type="radio" id="admin-thursday" name="admin-day" value="목요일">
+                            <label for="admin-thursday" class="day-label" data-day="목요일">
+                                목요일
+                                <div class="date-info" id="admin-thursday-date"></div>
+                            </label>
+                        </div>
+                        <div class="day-option">
+                            <input type="radio" id="admin-friday" name="admin-day" value="금요일">
+                            <label for="admin-friday" class="day-label" data-day="금요일">
+                                금요일
+                                <div class="date-info" id="admin-friday-date"></div>
+                            </label>
+                        </div>
+                        <div class="day-option">
+                            <input type="radio" id="admin-saturday" name="admin-day" value="토요일">
+                            <label for="admin-saturday" class="day-label" data-day="토요일">
+                                토요일
+                                <div class="date-info" id="admin-saturday-date"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
 
-            await loadRecentVisits();
-            initZones();
-            updateBadges();
-            closeModal();
-        }
+                <div class="form-group zone-selection-container" id="adminZoneSelectionContainer" style="display: none;">
+                    <label>구역 선택</label>
+                    <div class="zone-selection" id="adminZoneSelection">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                </div>
 
-        // 구역 목록 표시
-        async function showZonesList() {
-            const modal = document.getElementById('zonesModal');
-            const tbody = document.querySelector('#zonesTable tbody');
-            tbody.innerHTML = '';
-            selectedZones = [];
+                <div id="adminCancelList" style="display: none;">
+                    <h4>취소할 신청 선택</h4>
+                    <div id="adminCancelOptions"></div>
+                </div>
 
-            const historySnapshot = await db.collection('history')
-                .orderBy('timestamp', 'desc')
-                .get();
+                <div class="admin-action-buttons">
+                    <button type="button" class="btn success small" onclick="executeAdminAction()">실행</button>
+                    <button type="button" class="btn secondary small" onclick="resetAdminForm()">초기화</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            const latestDates = {};
-            historySnapshot.forEach(doc => {
-                const date = doc.id;
-                const zones = doc.data().zones || {};
-                Object.keys(zones).forEach(zone => {
-                    if (!latestDates[zone] || new Date(latestDates[zone]) < new Date(date)) {
-                        latestDates[zone] = date;
-                    }
+    <!-- 사용자 관리 모달 -->
+    <div id="userManagementModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserManagementModal()">&times;</span>
+            <h2>사용자 관리</h2>
+
+            <div class="form-group">
+                <label for="newUserName">새 사용자 추가</label>
+                <input type="text" id="newUserName" placeholder="이름을 입력하세요" required>
+                <button type="button" class="btn success small" onclick="addNewUser()" style="margin-top: 10px;">추가</button>
+            </div>
+
+            <div class="user-list">
+                <h3>등록된 사용자</h3>
+                <div id="userManagementList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 구역 관리 모달 -->
+    <div id="zoneManagementModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeZoneManagementModal()">&times;</span>
+            <h2>구역 관리</h2>
+
+            <div class="form-group">
+                <label for="newZoneName">새 구역 추가</label>
+                <input type="text" id="newZoneName" placeholder="구역 이름을 입력하세요" required>
+            </div>
+            <div class="form-group">
+                <label for="newZoneCapacity">최대 용량</label>
+                <input type="number" id="newZoneCapacity" placeholder="최대 용량 (기본 4)" value="4" min="1" required>
+                <button type="button" class="btn success small" onclick="addNewZone()" style="margin-top: 10px;">추가</button>
+            </div>
+
+            <div class="user-list">
+                <h3>등록된 구역</h3>
+                <div id="zoneManagementList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 데이터 통계 모달 -->
+    <div id="statsModal" class="modal">
+        <div class="modal-content large">
+            <span class="close" onclick="closeStatsModal()">&times;</span>
+            <h2>데이터 통계</h2>
+
+            <div class="stats-header">
+                <div class="month-navigation">
+                    <button class="month-nav-btn" onclick="changeMonth(-1)">‹</button>
+                    <div class="current-month" id="currentMonth"></div>
+                    <button class="month-nav-btn" onclick="changeMonth(1)">›</button>
+                </div>
+            </div>
+
+            <div class="stats-content">
+                <div class="stats-summary" id="statsSummary"></div>
+                <div class="zone-stats" id="zoneStats"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>// 신청자 데이터를 저장할 객체
+        const applicants = {};
+        const days = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+        let zones = []; // 동적으로 로드
+        let currentUser = '';
+        let isAdmin = false;
+        let userApplications = [];
+        let allApplications = [];
+        let currentStatsYear = new Date().getFullYear();
+        let currentStatsMonth = new Date().getMonth() + 1;
+        let allowedUsers = []; // 서버에서 로드될 배열
+        let usersLoaded = false; // 사용자 데이터 로드 여부 확인 (추가)
+        // 초기 데이터 구조 생성
+        function initializeApplicants() {
+            days.forEach(day => {
+                applicants[day] = {};
+                zones.forEach(zone => {
+                    applicants[day][zone.name] = [];
                 });
             });
+        }
 
-            const allZoneDates = Object.values(latestDates);
-            const latestRecordedDate = allZoneDates.length
-                ? allZoneDates.reduce((a, b) => new Date(a) > new Date(b) ? a : b)
-                : null;
+        // 페이지 로드 시 초기화
+        window.initializeApp = function () {
+            console.log('Initializing application...');
+            setCurrentWeekDates();
+            setAdminWeekDates();
+            loadZonesFromFirestore(); // 구역 먼저 로드
+            populateAdminUserSelect();
+            loadDataFromFirestore();
 
-            let lastHighlightedRow = null;
-            Object.entries(zoneData).forEach(([zone, name]) => {
-                const latestDate = latestDates[zone] || '기록 없음';
-                const isNewestOverall = latestDate === latestRecordedDate;
-                const personalZone = personalZoneData[zone] ? `<small class="personal-zone-info">[개인구역: ${personalZoneData[zone]}]</small>` : '';
-                const isDisabled = assignments[zone] ? 'disabled' : '';
-
-                const row = document.createElement('tr');
-                if (isNewestOverall) {
-                    row.classList.add('highlight');
-                    lastHighlightedRow = row;
+            document.getElementById('loginName').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    login();
                 }
-                if (isDisabled) {
-                    row.classList.add('disabled');
-                }
-                row.setAttribute('data-zone', zone);
-                row.innerHTML = `
-                    <td>${zone}</td>
-                    <td>${name} ${personalZone}</td>
-                    <td>${latestDate}</td>`;
-                if (!isDisabled) {
-                    row.onclick = () => toggleZoneSelection(row, zone);
-                }
-                tbody.appendChild(row);
             });
+        };
 
-            modal.style.display = 'block';
-            if (lastHighlightedRow) {
-                setTimeout(() => {
-                    lastHighlightedRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 0);
+        // Firestore에서 구역 목록 로드
+        async function loadZonesFromFirestore() {
+            try {
+                const { collection, getDocs } = window.firestoreFunctions;
+                const zonesRef = collection(window.db, 'zones');
+                const querySnapshot = await getDocs(zonesRef);
+                zones = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    zones.push({
+                        id: doc.id,
+                        name: data.name,
+                        maxCapacity: data.maxCapacity || 4
+                    });
+                });
+                console.log('Loaded zones from Firestore:', zones);
+                initializeApplicants(); // zones 로드 후 applicants 초기화
+                updateZoneUI(); // UI 업데이트
+                updateDisplay(); // 신청 현황 업데이트
+            } catch (error) {
+                console.error('구역 로드 오류:', error);
+                alert('구역 목록을 불러오는 중 오류가 발생했습니다.');
             }
         }
 
-        // 구역 선택 토글
-        function toggleZoneSelection(row, zone) {
-            if (row.classList.contains('disabled')) return;
-            row.classList.toggle('selected-row');
-            if (selectedZones.includes(zone)) {
-                selectedZones = selectedZones.filter(z => z !== zone);
-            } else {
-                selectedZones.push(zone);
+        // 구역 UI 동적 업데이트 (모달 등)
+        function updateZoneUI() {
+            // 사용자 신청 모달
+            const zoneSelection = document.getElementById('zoneSelection');
+            if (zoneSelection) {
+                zoneSelection.innerHTML = '';
+                zones.forEach((zone, index) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'zone-option';
+                    optionDiv.innerHTML = `
+                                                <input type="radio" id="zone${index}" name="zone" value="${zone.name}">
+                                                <label for="zone${index}" class="zone-label" data-zone="${zone.name}">
+                                                    ${zone.name}
+                                                    <div class="capacity-info">0/${zone.maxCapacity}</div>
+                                                </label>
+                                            `;
+                    zoneSelection.appendChild(optionDiv);
+                });
+            }
+
+            // 관리자 모달
+            const adminZoneSelection = document.getElementById('adminZoneSelection');
+            if (adminZoneSelection) {
+                adminZoneSelection.innerHTML = '';
+                zones.forEach((zone, index) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'zone-option';
+                    optionDiv.innerHTML = `
+                                                <input type="radio" id="admin-zone${index}" name="admin-zone" value="${zone.name}">
+                                                <label for="admin-zone${index}" class="zone-label" data-zone="${zone.name}">
+                                                    ${zone.name}
+                                                    <div class="capacity-info">0/${zone.maxCapacity}</div>
+                                                </label>
+                                            `;
+                    adminZoneSelection.appendChild(optionDiv);
+                });
+            }
+            console.log('Zone UI updated');
+        }
+
+        // Firestore에서 사용자 목록 로드
+        async function loadUsersFromFirestore() {
+            // 이미 로드되었으면 다시 로드하지 않음
+            if (usersLoaded) {
+                console.log('Users already loaded, using cache');
+                return;
+            }
+
+            try {
+                console.log('Loading users from Firestore...');
+                const { collection, getDocs } = window.firestoreFunctions;
+                const usersRef = collection(window.db, 'users');
+                const querySnapshot = await getDocs(usersRef);
+                allowedUsers = [];
+                querySnapshot.forEach((doc) => {
+                    allowedUsers.push(doc.data().name);
+                });
+                usersLoaded = true; // 로드 완료 플래그 설정
+                console.log('Loaded users from Firestore:', allowedUsers);
+            } catch (error) {
+                console.error('사용자 로드 오류:', error);
+                alert('사용자 목록을 불러오는 중 오류가 발생했습니다.');
             }
         }
 
-        // 구역 목록 모달 닫기
-        function closeZones() {
-            document.getElementById('zonesModal').style.display = 'none';
-            selectedZones = [];
-            document.querySelectorAll('#zonesTable tr.selected-row').forEach(row => {
-                row.classList.remove('selected-row');
+        function invalidateUsersCache() {
+            usersLoaded = false;
+            console.log('Users cache invalidated');
+        }
+
+        // Firestore에서 데이터 로드
+        async function loadDataFromFirestore() {
+            try {
+                console.log('Loading data from Firestore...');
+                const { collection, onSnapshot, query, where } = window.firestoreFunctions;
+                const applicantsRef = collection(window.db, 'applicants');
+                const currentWeekDates = getCurrentWeekDates();
+                const weekQuery = query(
+                    applicantsRef,
+                    where('actualDate', '>=', currentWeekDates.start),
+                    where('actualDate', '<=', currentWeekDates.end)
+                );
+
+                onSnapshot(weekQuery, (querySnapshot) => {
+                    console.log('Firestore snapshot received:', querySnapshot.size, 'documents');
+                    initializeApplicants(); // 초기화
+
+                    allApplications = [];
+                    userApplications = [];
+
+                    querySnapshot.forEach((docSnap) => {
+                        const data = docSnap.data();
+                        const { name, day, zone } = data;
+                        if (applicants[day] && applicants[day][zone]) {
+                            applicants[day][zone].push(name);
+                        }
+                        allApplications.push({
+                            id: docSnap.id,
+                            ...data
+                        });
+                    });
+
+                    console.log('All applications loaded:', allApplications);
+                    filterUserApplications();
+                    updateDisplay();
+                    if (document.getElementById('cancelModal').style.display === 'block') {
+                        updateCancelList();
+                    }
+                    if (document.getElementById('statsModal').style.display === 'block') {
+                        loadMonthlyStats();
+                    }
+                }, (error) => {
+                    console.error('Firestore snapshot error:', error);
+                    alert('데이터베이스 연결에 실패했습니다.');
+                });
+            } catch (error) {
+                console.error('Firebase 연결 오류:', error);
+                alert('데이터베이스 연결에 실패했습니다.');
+            }
+        }
+
+        // Firestore에 데이터 저장
+        async function saveToFirestore(name, day, zone) {
+            try {
+                console.log(`Saving to Firestore: ${name}, ${day}, ${zone}`);
+                const { collection, addDoc } = window.firestoreFunctions;
+                const applicantsRef = collection(window.db, 'applicants');
+                const actualDate = getActualDateForDay(day);
+
+                const docRef = await addDoc(applicantsRef, {
+                    name: name,
+                    day: day,
+                    zone: zone,
+                    actualDate: actualDate,
+                    timestamp: new Date()
+                });
+                console.log('Document saved with ID:', docRef.id);
+                return true;
+            } catch (error) {
+                console.error('저장 오류:', error);
+                alert('신청 저장 중 오류가 발생했습니다.');
+                return false;
+            }
+        }
+
+        // Firestore에서 데이터 삭제
+        async function deleteFromFirestore(docId) {
+            try {
+                console.log('Deleting document with ID:', docId);
+                const { deleteDoc, doc } = window.firestoreFunctions;
+                await deleteDoc(doc(window.db, 'applicants', docId));
+                console.log('Document deleted successfully');
+                return true;
+            } catch (error) {
+                console.error('삭제 오류:', error);
+                alert('신청 취소 중 오류가 발생했습니다: ' + error.message);
+                return false;
+            }
+        }
+
+        // Firestore에 사용자 추가
+        async function addUserToFirestore(name) {
+            try {
+                const { collection, addDoc } = window.firestoreFunctions;
+                const usersRef = collection(window.db, 'users');
+                await addDoc(usersRef, { name: name });
+                console.log('User added:', name);
+                return true;
+            } catch (error) {
+                console.error('사용자 추가 오류:', error);
+                alert('사용자 추가 중 오류가 발생했습니다.');
+                return false;
+            }
+        }
+
+        // Firestore에서 사용자 삭제
+        async function deleteUserFromFirestore(docId) {
+            try {
+                const { deleteDoc, doc } = window.firestoreFunctions;
+                await deleteDoc(doc(window.db, 'users', docId));
+                console.log('User deleted with ID:', docId);
+                return true;
+            } catch (error) {
+                console.error('사용자 삭제 오류:', error);
+                alert('사용자 삭제 중 오류가 발생했습니다.');
+                return false;
+            }
+        }
+
+        // Firestore에 구역 추가
+        async function addZoneToFirestore(name, maxCapacity) {
+            try {
+                const { collection, addDoc } = window.firestoreFunctions;
+                const zonesRef = collection(window.db, 'zones');
+                await addDoc(zonesRef, { name: name, maxCapacity: parseInt(maxCapacity) });
+                console.log('Zone added:', name);
+                return true;
+            } catch (error) {
+                console.error('구역 추가 오류:', error);
+                alert('구역 추가 중 오류가 발생했습니다.');
+                return false;
+            }
+        }
+
+        // Firestore에서 구역 삭제
+        async function deleteZoneFromFirestore(docId) {
+            try {
+                const { deleteDoc, doc } = window.firestoreFunctions;
+                await deleteDoc(doc(window.db, 'zones', docId));
+                console.log('Zone deleted with ID:', docId);
+                return true;
+            } catch (error) {
+                console.error('구역 삭제 오류:', error);
+                alert('구역 삭제 중 오류가 발생했습니다.');
+                return false;
+            }
+        }
+
+        // 로그인 함수
+        async function login() {
+            const name = document.getElementById('loginName').value.trim();
+            if (!name) {
+                alert('이름을 입력해주세요.');
+                return;
+            }
+
+            if (name === 'admin') {
+                currentUser = 'admin';
+                isAdmin = true;
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('adminPage').style.display = 'block';
+                console.log('Admin logged in');
+                return;
+            }
+
+            // 서버에서 사용자 확인
+            const { collection, getDocs, query, where } = window.firestoreFunctions;
+            const usersRef = collection(window.db, 'users');
+            const q = query(usersRef, where("name", "==", name));
+            const querySnapshot = await getDocs(q);
+
+            if (querySnapshot.empty) {
+                alert('등록되지 않은 전도인입니다.');
+                document.getElementById('loginName').value = '';
+                return;
+            }
+
+            currentUser = name;
+            isAdmin = false;
+            document.getElementById('userInfo').textContent = `${currentUser}님 환영합니다!`;
+            document.getElementById('loginPage').style.display = 'none';
+            document.getElementById('mainPage').style.display = 'block';
+            filterUserApplications();
+            updateCancelList();
+            updateDisplay();
+            console.log('User logged in:', currentUser);
+        }
+
+        // 관리자 사용자 선택 목록 채우기
+        async function populateAdminUserSelect() {
+            const select = document.getElementById('adminUserSelect');
+            if (!select) return;
+
+            select.innerHTML = '<option value="">사용자를 선택하세요</option>';
+
+            // 캐시된 데이터 사용 - DB 호출 최소화
+            if (!usersLoaded) {
+                await loadUsersFromFirestore();
+            }
+
+            allowedUsers.forEach(user => {
+                const option = document.createElement('option');
+                option.value = user;
+                option.textContent = user;
+                select.appendChild(option);
+            });
+            console.log('Admin user select populated from cache');
+        }
+
+        // 사용자 목록 로드 및 표시 (관리자 페이지 및 모달)
+        async function loadAndDisplayUsers() {
+            const userManagementListEl = document.getElementById('userManagementList');
+            userManagementListEl.innerHTML = '';
+
+            const { collection, getDocs } = window.firestoreFunctions;
+            const usersRef = collection(window.db, 'users');
+            const querySnapshot = await getDocs(usersRef);
+
+            // 사용자 수 계산
+            const userCount = querySnapshot.size;
+
+            // 제목 업데이트
+            const userListHeading = document.querySelector('#userManagementModal .user-list h3');
+            userListHeading.textContent = `등록된 사용자 (총 ${userCount}명)`;
+
+            if (querySnapshot.empty) {
+                userManagementListEl.innerHTML = '<p>등록된 사용자가 없습니다.</p>';
+                return;
+            }
+
+            querySnapshot.forEach((docSnap) => {
+                const userData = docSnap.data();
+                const userName = userData.name;
+                const docId = docSnap.id;
+
+                const userItem = document.createElement('div');
+                userItem.className = 'user-item';
+                userItem.innerHTML = `
+                                            <div class="user-name">${userName}</div>
+                                            <button class="btn danger small" onclick="deleteUser('${docId}', '${userName}')">삭제</button>
+                                        `;
+                userManagementListEl.appendChild(userItem);
             });
         }
 
-        // 지도 표시
-        function showMap(zone) {
-            const modal = document.getElementById('mapModal');
-            const mapContainer = document.getElementById('mapContainer');
-            const mapModalTitle = document.getElementById('mapModalTitle');
-            const zoneName = zoneData[zone] ? ` (${zoneData[zone]})` : '';
-            mapModalTitle.textContent = `구역 ${zone}${zoneName} 지도`;
-            
-            if (mapLinks[zone]) {
-                mapContainer.innerHTML = `
-                    <iframe 
-                        src="${mapLinks[zone]}" 
-                        width="100%" 
-                        height="100%"
-                        style="border:0; border-radius:8px;"
-                        allowfullscreen>
-                    </iframe>`;
-                modal.style.display = 'block';
-            } else {
-                alert("해당 구역의 지도가 없습니다.");
+        // 새 사용자 추가
+        async function addNewUser() {
+            const name = document.getElementById('newUserName').value.trim();
+            if (!name) {
+                alert('이름을 입력해주세요.');
+                return;
+            }
+
+            // 중복 확인
+            const { collection, getDocs, query, where } = window.firestoreFunctions;
+            const usersRef = collection(window.db, 'users');
+            const q = query(usersRef, where("name", "==", name));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                alert('이미 등록된 사용자입니다.');
+                return;
+            }
+
+            const added = await addUserToFirestore(name);
+            if (added) {
+                alert(`${name}님이 추가되었습니다.`);
+                document.getElementById('newUserName').value = '';
+                invalidateUsersCache();
+                loadUsersFromFirestore();
+                populateAdminUserSelect();
+                loadAndDisplayUsers();
             }
         }
 
-        // 지도 모달 닫기
-        function closeMap() {
-            document.getElementById('mapModal').style.display = 'none';
-            document.getElementById('mapContainer').innerHTML = '';
+        // 사용자 삭제
+        async function deleteUser(docId, userName) {
+            if (confirm(`${userName}님을 삭제하시겠습니까?`)) {
+                const deleted = await deleteUserFromFirestore(docId);
+                if (deleted) {
+                    alert(`${userName}님이 삭제되었습니다.`);
+                    invalidateUsersCache();
+                    loadUsersFromFirestore();
+                    populateAdminUserSelect();
+                    loadAndDisplayUsers();
+                }
+            }
         }
 
-        // 모달 외부 클릭 닫기
-        document.getElementById('mapModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('mapModal')) {
-                closeMap();
-            }
-        });
+        // 구역 목록 로드 및 표시 (관리자 모달)
+        async function loadAndDisplayZones() {
+            const zoneManagementListEl = document.getElementById('zoneManagementList');
+            zoneManagementListEl.innerHTML = '';
 
-        // 구역 초기화
-        function initZones() {
-            document.getElementById('zoneList').innerHTML = '';
-            for (const zone in assignments) {
-                const zoneName = zoneData[zone] ? ` (${zoneData[zone]})` : '';
-                const personalZone = personalZoneData[zone] ? `[개인구역: ${personalZoneData[zone]}]` : '';
-                const household = householdData[zone] ? `[가구수: ${householdData[zone]}]` : '';
-                const recentVisit = recentVisits[zone] ? `[최근방문: ${recentVisits[zone]}]` : '[최근방문: -]';
-                const zoneLength = zoneLengthData[zone] ? `[구역길이: ${zoneLengthData[zone]}m]` : '';
-                document.getElementById('zoneList').innerHTML += `
-                    <div class="zone-item">
-                        <h4>구역 ${zone}${zoneName}</h4>
-                        <div class="zone-info">
-                            ${personalZone ? `<div class="personal-zone">${personalZone}</div>` : ''}
-                            ${household ? `<div class="household-count">${household}</div>` : ''}
-                            ${recentVisit ? `<div class="recent-visit">${recentVisit}</div>` : ''}
-                            ${zoneLength ? `<div class="zone-length">${zoneLength}</div>` : ''}
-                        </div>
-                        <span class="edit-badge">${assignments[zone].length}명</span>
-                        <div class="buttons">
-                            <button class="assign-btn" onclick="openAssignModal(${zone})">인원배정</button>
-                            ${mapLinks[zone] ? `<button class="map-btn" onclick="showMap(${zone})">지도보기</button>` : ''}
-                            <button class="delete-btn" onclick="deleteZone(${zone})">삭제</button>
-                        </div>
-                        <div id="result-${zone}">${assignments[zone].join(', ')}</div>
-                    </div>`;
+            const { collection, getDocs } = window.firestoreFunctions;
+            const zonesRef = collection(window.db, 'zones');
+            const querySnapshot = await getDocs(zonesRef);
+
+            if (querySnapshot.empty) {
+                zoneManagementListEl.innerHTML = '<p>등록된 구역이 없습니다.</p>';
+                return;
             }
-            updateUIState();
+
+            querySnapshot.forEach((docSnap) => {
+                const zoneData = docSnap.data();
+                const zoneName = zoneData.name;
+                const maxCapacity = zoneData.maxCapacity;
+                const docId = docSnap.id;
+
+                const zoneItem = document.createElement('div');
+                zoneItem.className = 'user-item';
+                zoneItem.innerHTML = `
+                                            <div class="user-name">${zoneName} (용량: ${maxCapacity})</div>
+                                            <button class="btn danger small" onclick="deleteZone('${docId}', '${zoneName}')">삭제</button>
+                                        `;
+                zoneManagementListEl.appendChild(zoneItem);
+            });
+        }
+
+        // 새 구역 추가
+        async function addNewZone() {
+            const name = document.getElementById('newZoneName').value.trim();
+            const maxCapacity = document.getElementById('newZoneCapacity').value.trim();
+            if (!name || !maxCapacity) {
+                alert('구역 이름과 용량을 입력해주세요.');
+                return;
+            }
+
+            // 중복 확인
+            const { collection, getDocs, query, where } = window.firestoreFunctions;
+            const zonesRef = collection(window.db, 'zones');
+            const q = query(zonesRef, where("name", "==", name));
+            const querySnapshot = await getDocs(q);
+
+            if (!querySnapshot.empty) {
+                alert('이미 등록된 구역입니다.');
+                return;
+            }
+
+            const added = await addZoneToFirestore(name, maxCapacity);
+            if (added) {
+                alert(`${name} 구역이 추가되었습니다.`);
+                document.getElementById('newZoneName').value = '';
+                document.getElementById('newZoneCapacity').value = '4';
+                loadZonesFromFirestore();
+                loadAndDisplayZones();
+            }
         }
 
         // 구역 삭제
-        async function deleteZone(zone) {
-            if (!isEditableDate()) return alert("과거 날짜는 수정할 수 없습니다");
-            const zoneName = zoneData[zone] ? ` (${zoneData[zone]})` : '';
-            if (confirm(`구역 ${zone}${zoneName}을(를) 삭제하시겠습니까?`)) {
-                delete assignments[zone];
-                assignedPeople = [].concat(...Object.values(assignments));
-                initZones();
-                const date = document.getElementById('historyDate').value;
-                await db.collection('history').doc(date).set({
-                    zones: assignments,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        async function deleteZone(docId, zoneName) {
+            if (confirm(`${zoneName} 구역을 삭제하시겠습니까?`)) {
+                const deleted = await deleteZoneFromFirestore(docId);
+                if (deleted) {
+                    alert(`${zoneName} 구역이 삭제되었습니다.`);
+                    loadZonesFromFirestore();
+                    loadAndDisplayZones();
+                }
+            }
+        }
+
+        // 신청 모달 열기
+        function openRegistrationModal() {
+            document.getElementById('registrationModal').style.display = 'block';
+            setCurrentWeekDates();
+            updateZoneDisplayForModal();
+            console.log('Registration modal opened');
+        }
+
+        // 신청 모달 닫기
+        function closeRegistrationModal() {
+            document.getElementById('registrationModal').style.display = 'none';
+            document.getElementById('registrationForm').reset();
+            document.getElementById('zoneSelectionContainer').classList.remove('show');
+            console.log('Registration modal closed');
+        }
+
+        // 신청 취소 모달 열기
+        function openCancelModal() {
+            document.getElementById('cancelModal').style.display = 'block';
+            filterUserApplications();
+            updateCancelList();
+            console.log('Cancel modal opened');
+        }
+
+        // 신청 취소 모달 닫기
+        function closeCancelModal() {
+            document.getElementById('cancelModal').style.display = 'none';
+            console.log('Cancel modal closed');
+        }
+
+        // 사용자 관리 모달 열기
+        function openUserManagementModal() {
+            document.getElementById('userManagementModal').style.display = 'block';
+            loadAndDisplayUsers(); // 모달 열릴 때 사용자 목록 로드
+            populateAdminUserSelect(); // 여기서 한 번만 호출
+            console.log('User management modal opened');
+        }
+
+        // 사용자 관리 모달 닫기
+        function closeUserManagementModal() {
+            document.getElementById('userManagementModal').style.display = 'none';
+            console.log('User management modal closed');
+        }
+
+        // 구역 관리 모달 열기
+        function openZoneManagementModal() {
+            document.getElementById('zoneManagementModal').style.display = 'block';
+            loadAndDisplayZones(); // 모달 열릴 때 구역 목록 로드
+            console.log('Zone management modal opened');
+        }
+
+        // 구역 관리 모달 닫기
+        function closeZoneManagementModal() {
+            document.getElementById('zoneManagementModal').style.display = 'none';
+            console.log('Zone management modal closed');
+        }
+
+        // 데이터 통계 모달 열기
+        function openStatsModal() {
+            document.getElementById('statsModal').style.display = 'block';
+            loadMonthlyStats();
+            console.log('Stats modal opened');
+        }
+
+        // 데이터 통계 모달 닫기
+        function closeStatsModal() {
+            document.getElementById('statsModal').style.display = 'none';
+            console.log('Stats modal closed');
+        }
+
+        // 월간 통계 로드
+        async function loadMonthlyStats() {
+            try {
+                console.log('Loading monthly stats for:', currentStatsYear, currentStatsMonth);
+                const { collection, getDocs, query, where } = window.firestoreFunctions;
+                const applicantsRef = collection(window.db, 'applicants');
+                const startDate = new Date(currentStatsYear, currentStatsMonth - 1, 1);
+                const endDate = new Date(currentStatsYear, currentStatsMonth, 0);
+                const startDateStr = getLocalDateString(startDate);
+                const endDateStr = getLocalDateString(endDate);
+
+                const monthQuery = query(
+                    applicantsRef,
+                    where('actualDate', '>=', startDateStr),
+                    where('actualDate', '<=', endDateStr)
+                );
+
+                const querySnapshot = await getDocs(monthQuery);
+                const monthlyData = [];
+                const zoneStats = {};
+                const dayStats = {};
+
+                zones.forEach(zone => zoneStats[zone.name] = 0);
+                days.forEach(day => dayStats[day] = 0);
+
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    monthlyData.push(data);
+                    if (zoneStats[data.zone] !== undefined) {
+                        zoneStats[data.zone]++;
+                    }
+                    if (dayStats[data.day] !== undefined) {
+                        dayStats[data.day]++;
+                    }
                 });
+
+                displayMonthlyStats(monthlyData, zoneStats, dayStats);
+            } catch (error) {
+                console.error('통계 데이터 로드 오류:', error);
+                alert('통계 데이터를 불러오는 중 오류가 발생했습니다.');
             }
         }
 
-        // 배지 업데이트
-        function updateBadges() {
-            document.querySelectorAll('.edit-badge').forEach(badge => {
-                const zone = badge.parentElement.querySelector('h4').textContent.split(' ')[1];
-                badge.textContent = `${assignments[zone]?.length || 0}명`;
+        // 로컬 날짜 문자열 생성 함수
+        function getLocalDateString(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        // 월간 통계 화면에 표시
+        function displayMonthlyStats(data, zoneStats, dayStats) {
+            document.getElementById('currentMonth').textContent = `${currentStatsYear}년 ${currentStatsMonth}월`;
+
+            const summaryEl = document.getElementById('statsSummary');
+            const totalApplications = data.length;
+            const uniqueUsers = new Set(data.map(d => d.name)).size;
+
+            const zoneCounts = Object.values(zoneStats);
+            const mean = totalApplications / zones.length;
+            const variance = zoneCounts.reduce((acc, count) => acc + Math.pow(count - mean, 2), 0) / zones.length;
+            const stdDev = Math.sqrt(variance);
+            const imbalanceRate = mean > 0 ? (stdDev / mean) * 100 : 0;
+
+            summaryEl.innerHTML = `
+                                        <div class="stat-card">
+                                            <div class="stat-number">${totalApplications}</div>
+                                            <div class="stat-label">총 신청 건수</div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <div class="stat-number">${uniqueUsers}</div>
+                                            <div class="stat-label">참여 인원</div>
+                                        </div>
+                                        <div class="stat-card">
+                                            <div class="stat-number">${imbalanceRate.toFixed(1)}%</div>
+                                            <div class="stat-label">불균형률</div>
+                                        </div>
+                                    `;
+
+            const zoneStatsEl = document.getElementById('zoneStats');
+            const maxZoneCount = Math.max(...Object.values(zoneStats));
+
+            zoneStatsEl.innerHTML = '';
+            zones.forEach(zone => {
+                const count = zoneStats[zone.name] || 0;
+                const percentage = maxZoneCount > 0 ? (count / maxZoneCount) * 100 : 0;
+                const zoneCard = document.createElement('div');
+                zoneCard.className = 'zone-stat-card';
+                zoneCard.innerHTML = `
+                                            <div class="zone-stat-title">${zone.name}</div>
+                                            <div class="zone-stat-bar">
+                                                <div class="zone-stat-fill" style="width: ${percentage}%"></div>
+                                            </div>
+                                            <div class="zone-stat-text">${count}건 신청</div>
+                                        `;
+                zoneStatsEl.appendChild(zoneCard);
             });
+            console.log('Monthly stats displayed:', data.length, 'applications');
         }
 
-        // 모달 닫기
-        function closeModal() {
-            document.getElementById('assignModal').style.display = 'none';
-            selectedNames = [];
-            document.getElementById('searchInput').value = '';
-        }
-
-        // 요약 화면 열기
-        function showSummary() {
-            const modal = document.getElementById('summaryModal');
-            const tbody = document.querySelector('#summaryTable tbody');
-            tbody.innerHTML = '';
-
-            for (const [zone, members] of Object.entries(assignments)) {
-                const zoneName = zoneData[zone] ? `<br><small>${zoneData[zone]}</small>` : '';
-                const row = document.createElement('tr');
-                row.innerHTML = `<td>${zone}번${zoneName}</td><td>${members.join(', ')}</td>`;
-                tbody.appendChild(row);
+        // 월 변경
+        function changeMonth(direction) {
+            currentStatsMonth += direction;
+            if (currentStatsMonth > 12) {
+                currentStatsMonth = 1;
+                currentStatsYear++;
+            } else if (currentStatsMonth < 1) {
+                currentStatsMonth = 12;
+                currentStatsYear--;
             }
-            modal.style.display = 'block';
+            loadMonthlyStats();
+            console.log('Month changed to:', currentStatsYear, currentStatsMonth);
         }
 
-        // 요약 화면 닫기
-        function closeSummary() {
-            document.getElementById('summaryModal').style.display = 'none';
+        // 현재 주의 날짜 범위 계산
+        function getCurrentWeekDates() {
+            const today = new Date();
+            const currentDay = today.getDay();
+            const sunday = new Date(today);
+            sunday.setDate(today.getDate() - currentDay);
+            const saturday = new Date(sunday);
+            saturday.setDate(sunday.getDate() + 6);
+            return {
+                start: getLocalDateString(sunday),
+                end: getLocalDateString(saturday)
+            };
         }
 
-        // 모달 외부 클릭 닫기
-        document.getElementById('assignModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('assignModal')) {
-                closeModal();
+        // 특정 요일의 실제 날짜 계산
+        function getActualDateForDay(dayName) {
+            const today = new Date();
+            const currentDay = today.getDay();
+            const sunday = new Date(today);
+            sunday.setDate(today.getDate() - currentDay);
+            const dayMap = {
+                '월요일': 1, '화요일': 2, '수요일': 3, '목요일': 4,
+                '금요일': 5, '토요일': 6
+            };
+            const targetDate = new Date(sunday);
+            targetDate.setDate(sunday.getDate() + dayMap[dayName]);
+            return getLocalDateString(targetDate);
+        }
+
+        // 현재 주의 각 요일 날짜 설정
+        function setCurrentWeekDates() {
+            const today = new Date();
+            const currentDay = today.getDay();
+            const sunday = new Date(today);
+            sunday.setDate(today.getDate() - currentDay);
+            const dayElements = [
+                { id: 'monday-date', offset: 1 },
+                { id: 'tuesday-date', offset: 2 },
+                { id: 'wednesday-date', offset: 3 },
+                { id: 'thursday-date', offset: 4 },
+                { id: 'friday-date', offset: 5 },
+                { id: 'saturday-date', offset: 6 }
+            ];
+            dayElements.forEach(day => {
+                const date = new Date(sunday);
+                date.setDate(sunday.getDate() + day.offset);
+                const dateString = `${date.getMonth() + 1}/${date.getDate()}`;
+                const element = document.getElementById(day.id);
+                if (element) {
+                    element.textContent = dateString;
+                }
+            });
+            console.log('Current week dates set');
+        }
+
+        // 관리자 요일 날짜 설정
+        function setAdminWeekDates() {
+            const today = new Date();
+            const currentDay = today.getDay();
+            const sunday = new Date(today);
+            sunday.setDate(today.getDate() - currentDay);
+            const dayElements = [
+                { id: 'admin-monday-date', offset: 1 },
+                { id: 'admin-tuesday-date', offset: 2 },
+                { id: 'admin-wednesday-date', offset: 3 },
+                { id: 'admin-thursday-date', offset: 4 },
+                { id: 'admin-friday-date', offset: 5 },
+                { id: 'admin-saturday-date', offset: 6 }
+            ];
+            dayElements.forEach(day => {
+                const date = new Date(sunday);
+                date.setDate(sunday.getDate() + day.offset);
+                const dateString = `${date.getMonth() + 1}/${date.getDate()}`;
+                const element = document.getElementById(day.id);
+                if (element) {
+                    element.textContent = dateString;
+                }
+            });
+            console.log('Admin week dates set');
+        }
+
+        // 사용자 신청 필터링
+        function filterUserApplications() {
+            if (!currentUser || isAdmin) {
+                userApplications = [];
+                return;
+            }
+            userApplications = allApplications.filter(a => a.name === currentUser);
+            console.log('Filtered user applications:', userApplications);
+        }
+
+        // 신청 취소 목록 업데이트
+        function updateCancelList() {
+            const cancelListEl = document.getElementById('cancelList');
+            cancelListEl.innerHTML = '';
+
+            if (userApplications.length === 0) {
+                const noApplicationsDiv = document.createElement('div');
+                noApplicationsDiv.className = 'no-applications';
+                noApplicationsDiv.textContent = '신청 내역이 없습니다.';
+                cancelListEl.appendChild(noApplicationsDiv);
+                console.log('No user applications to display in cancel list');
+                return;
+            }
+
+            userApplications.forEach(application => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'cancel-item';
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = 'cancel-info';
+
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'cancel-day';
+                dayDiv.textContent = application.day;
+
+                const detailsDiv = document.createElement('div');
+                detailsDiv.className = 'cancel-details';
+                const dateParts = application.actualDate.split('-');
+                const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                const dateString = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+                detailsDiv.textContent = `${dateString} • ${application.zone}`;
+
+                infoDiv.appendChild(dayDiv);
+                infoDiv.appendChild(detailsDiv);
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'btn danger';
+                cancelBtn.textContent = '취소';
+                cancelBtn.onclick = () => confirmCancelApplication(application);
+
+                itemDiv.appendChild(infoDiv);
+                itemDiv.appendChild(cancelBtn);
+                cancelListEl.appendChild(itemDiv);
+            });
+            console.log('User cancel list updated with', userApplications.length, 'items');
+        }
+
+        // 신청 취소 확인
+        function confirmCancelApplication(application) {
+            const dateParts = application.actualDate.split('-');
+            const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+            const dateString = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+            const confirmMessage = `${application.day}(${dateString}) ${application.zone} 전시대 봉사 신청을 취소하시겠습니까?`;
+
+            if (confirm(confirmMessage)) {
+                cancelApplication(application.id, application);
+            }
+        }
+
+        // 신청 취소 실행
+        async function cancelApplication(docId, application) {
+            const deleted = await deleteFromFirestore(docId);
+            if (deleted) {
+                const dateParts = application.actualDate.split('-');
+                const date = new Date(dateParts[0], dateParts[1] - 1, dateParts[2]);
+                const dateString = `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}`;
+                alert(`${application.day}(${dateString}) ${application.zone} 신청이 취소되었습니다.`);
+                closeCancelModal();
+            }
+        }
+
+        // 모달에서 구역 표시 업데이트
+        function updateZoneDisplayForModal() {
+            document.querySelectorAll('.zone-label').forEach(label => {
+                label.style.background = '';
+                label.style.color = '';
+                label.style.borderColor = '';
+                label.style.cursor = 'pointer';
+                label.previousElementSibling.disabled = false;
+            });
+            console.log('Zone display reset for modal');
+        }
+
+        // 특정 요일의 구역 표시 업데이트
+        function updateZoneDisplay(selectedDay) {
+            const zoneLabels = document.querySelectorAll('#zoneSelection .zone-label');
+            zoneLabels.forEach(label => {
+                const zoneName = label.dataset.zone;
+                const zoneObj = zones.find(z => z.name === zoneName);
+                const maxCapacity = zoneObj ? zoneObj.maxCapacity : 4;
+                const currentCount = applicants[selectedDay][zoneName].length;
+                const capacityInfo = label.querySelector('.capacity-info');
+                const radioInput = label.previousElementSibling;
+
+                capacityInfo.textContent = `${currentCount}/${maxCapacity}`;
+
+                if (currentCount >= maxCapacity) {
+                    label.style.background = '#ff6b6b';
+                    label.style.color = 'white';
+                    label.style.borderColor = '#ff6b6b';
+                    label.style.cursor = 'not-allowed';
+                    radioInput.disabled = true;
+                } else {
+                    if (!radioInput.checked) {
+                        label.style.background = '';
+                        label.style.color = '';
+                        label.style.borderColor = '';
+                    }
+                    label.style.cursor = 'pointer';
+                    radioInput.disabled = false;
+                }
+            });
+            console.log('Zone display updated for day:', selectedDay);
+        }
+
+        // 신청자 목록 업데이트
+        function updateDisplay() {
+            const applicantsListEl = document.getElementById('applicantsList');
+            applicantsListEl.innerHTML = '';
+
+            days.forEach(day => {
+                const dayDiv = document.createElement('div');
+                dayDiv.className = 'day-section';
+
+                const dayTitleDiv = document.createElement('div');
+                dayTitleDiv.className = 'day-title';
+                const dayDate = getDateForDay(day);
+                dayTitleDiv.textContent = `${day} (${dayDate})`;
+                dayDiv.appendChild(dayTitleDiv);
+
+                zones.forEach(zone => {
+                    const zoneApplicants = applicants[day][zone.name] || [];
+                    const zoneDiv = document.createElement('div');
+                    zoneDiv.className = 'zone-applicants';
+
+                    const zoneNameDiv = document.createElement('div');
+                    zoneNameDiv.className = 'zone-name';
+                    zoneNameDiv.textContent = `${zone.name} (${zoneApplicants.length}/${zone.maxCapacity})`;
+
+                    const applicantNamesDiv = document.createElement('div');
+                    applicantNamesDiv.className = 'applicant-names';
+                    if (zoneApplicants.length > 0) {
+                        applicantNamesDiv.innerHTML = zoneApplicants
+                            .map(name => `<span class="name-tag">${name}</span>`)
+                            .join('');
+                    } else {
+                        applicantNamesDiv.textContent = '신청자 없음';
+                    }
+
+                    zoneDiv.appendChild(zoneNameDiv);
+                    zoneDiv.appendChild(applicantNamesDiv);
+                    dayDiv.appendChild(zoneDiv);
+                });
+
+                applicantsListEl.appendChild(dayDiv);
+            });
+            console.log('Applicants list updated');
+        }
+
+        // 특정 요일의 날짜 가져오기
+        function getDateForDay(dayName) {
+            const today = new Date();
+            const currentDay = today.getDay();
+            const sunday = new Date(today);
+            sunday.setDate(today.getDate() - currentDay);
+            const dayMap = {
+                '월요일': 1, '화요일': 2, '수요일': 3, '목요일': 4,
+                '금요일': 5, '토요일': 6
+            };
+            const targetDate = new Date(sunday);
+            targetDate.setDate(sunday.getDate() + dayMap[dayName]);
+            return `${targetDate.getFullYear()}/${targetDate.getMonth() + 1}/${targetDate.getDate()}`;
+        }
+
+        // 요일 선택 시 구역 선택 영역 표시
+        document.querySelectorAll('input[name="day"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                const zoneContainer = document.getElementById('zoneSelectionContainer');
+                if (this.checked) {
+                    zoneContainer.classList.add('show');
+                    updateZoneDisplay(this.value);
+                    document.querySelectorAll('input[name="zone"]').forEach(zoneRadio => {
+                        zoneRadio.checked = false;
+                    });
+                    console.log('Day selected:', this.value);
+                    zoneContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+
+        // 폼 제출 이벤트 처리
+        document.getElementById('registrationForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const selectedDay = document.querySelector('input[name="day"]:checked');
+            const selectedZone = document.querySelector('input[name="zone"]:checked');
+
+            if (!selectedDay) {
+                alert('요일을 선택해주세요.');
+                console.log('Form submission failed: No day selected');
+                return;
+            }
+            if (!selectedZone) {
+                alert('구역을 선택해주세요.');
+                console.log('Form submission failed: No zone selected');
+                return;
+            }
+
+            const dayValue = selectedDay.value;
+            const zoneValue = selectedZone.value;
+            const zoneObj = zones.find(z => z.name === zoneValue);
+            const maxCapacity = zoneObj ? zoneObj.maxCapacity : 4;
+
+            if (applicants[dayValue][zoneValue].length >= maxCapacity) {
+                alert(`${dayValue} ${zoneValue}은 마감되었습니다.`);
+                console.log('Form submission failed: Zone at max capacity');
+                return;
+            }
+
+            let isDuplicate = false;
+            zones.forEach(zone => {
+                if (applicants[dayValue][zone.name].includes(currentUser)) {
+                    isDuplicate = true;
+                }
+            });
+
+            if (isDuplicate) {
+                alert(`${dayValue}에 이미 신청하셨습니다.`);
+                console.log('Form submission failed: Duplicate application');
+                return;
+            }
+
+            const saved = await saveToFirestore(currentUser, dayValue, zoneValue);
+            if (saved) {
+                alert(`${dayValue} ${zoneValue} 신청이 완료되었습니다!`);
+                closeRegistrationModal();
             }
         });
 
-        // 구역 목록 모달 외부 클릭 닫기
-        document.getElementById('zonesModal').addEventListener('click', (e) => {
-            if (e.target === document.getElementById('zonesModal')) {
-                closeZones();
+        // 마감된 구역 클릭 방지
+        document.addEventListener('click', function (e) {
+            if (e.target.classList.contains('zone-label') && e.target.previousElementSibling.disabled) {
+                e.preventDefault();
+                const selectedDay = document.querySelector('input[name="day"]:checked') || document.querySelector('input[name="admin-day"]:checked');
+                if (selectedDay) {
+                    alert(`${selectedDay.value} ${e.target.dataset.zone}은 마감되었습니다.`);
+                }
             }
         });
 
-        // 지도 링크
-        const mapLinks = {
-            1: "https://www.google.com/maps/d/embed?mid=1bYOTo09R4lpFllZCBoz8rIS3wvMzX3Y&ehbc=2E312F",
-            2: "https://www.google.com/maps/d/u/1/embed?mid=1a09TGVLXo7oWJomZBogCapuqBX2PdMk&ehbc=2E312F",
-            3: "https://www.google.com/maps/d/u/1/embed?mid=13wwGtcvmp_kxp3nv-Nx2QwatT_OtMjI&ehbc=2E312F",
-            4: "https://www.google.com/maps/d/u/1/embed?mid=1rq3Ci9qlzxGK-qe1-jF5v8LCvn_9bbU&ehbc=2E312F",
-            5: "https://www.google.com/maps/d/u/1/embed?mid=19THNLjYY5errEXYttqUJHzlZmfpeWqtTGg&ehbc=2E312F",
-            6: "https://www.google.com/maps/d/u/1/embed?mid=1dUVGvLgRYTnOuQepWzw4BuocHgjRnqI&ehbc=2E312F",
-            7: "https://www.google.com/maps/d/u/1/embed?mid=1kBqohKDththrD6trpTSCWbeoX3iBKvo&ehbc=2E312F",
-            8: "https://www.google.com/maps/d/u/1/embed?mid=1jd6dP-BVCTAeC6Q4yIma8KQZDuMeMjQ&ehbc=2E312F",
-            9: "https://www.google.com/maps/d/u/1/embed?mid=1KPRyJGDItsHuRNsU2Qequ3Ayks5NswU&ehbc=2E312F",
-            10: "https://www.google.com/maps/d/u/1/embed?mid=1nZWc_Biapt5aegYY03slo50v9FvxM6A&ehbc=2E312F",
-            11: "https://www.google.com/maps/d/u/1/embed?mid=1hmFVBuY-OLMZpj37gDvNCopcu4qK-cw&ehbc=2E312F",
-            12: "https://www.google.com/maps/d/u/1/embed?mid=1djJZqWmHER3m5G9SGh5oIXnUkmJ56i8&ehbc=2E312F",
-            13: "https://www.google.com/maps/d/u/1/embed?mid=1Fp3S5Mcr35hZKzspb-J6reF8PNxMhgA&ehbc=2E312F",
-            14: "https://www.google.com/maps/d/u/1/embed?mid=12Tio9hinHhjy_OI_R3z1AT-4hV-J_K0&ehbc=2E312F",
-            15: "https://www.google.com/maps/d/u/1/embed?mid=1NFu0uv7XRCp-ZukhNKOqIZPXWdXoedI&ehbc=2E312F",
-            16: "https://www.google.com/maps/d/u/1/embed?mid=18nBgkuITKrm3ZWIJifsVcIlK0LX-83I&ehbc=2E312F",
-            17: "https://www.google.com/maps/d/u/1/embed?mid=1ldHAOZQ9tuboL2pdnPVOYjaXV9WVcDc&ehbc=2E312F",
-            18: "https://www.google.com/maps/d/u/1/embed?mid=16hsIw5gx3JhKF4xfEVcR0ZJMAa4Brcs&ehbc=2E312F",
-            19: "https://www.google.com/maps/d/u/1/embed?mid=12XeqO08ghxBkjspkVyVZthMOfFAG0rs&ehbc=2E312F",
-            20: "https://www.google.com/maps/d/u/1/embed?mid=1i8fC9C3e_ESiON-t5M9LYr2BfzmFBFQ&ehbc=2E312F",
-            21: "https://www.google.com/maps/d/u/1/embed?mid=1AgS-8blcSloaW6nILr9T64giZTxEp3Q&ehbc=2E312F",
-            22: "https://www.google.com/maps/d/u/1/embed?mid=1uJ7oBCWYk2pfKID5R0sAKOpgLASqW94&ehbc=2E312F",
-            23: "https://www.google.com/maps/d/u/1/embed?mid=1wHzZ6ucLAH3yFopla1okn9YPHKSKceQ&ehbc=2E312F",
-            24: "https://www.google.com/maps/d/u/1/embed?mid=12W7zhp0f2jPH3k3IhAtHkRrZ4oR9plE&ehbc=2E312F",
-            25: "https://www.google.com/maps/d/u/1/embed?mid=1Y6NRTha4Ra5thy26AtepTWyDltnbUVU&ehbc=2E312F",
-            26: "https://www.google.com/maps/d/u/1/embed?mid=1DYH4ETlJfnFEmYxCsK4x72sU2y4pel8&ehbc=2E312F",
-            27: "https://www.google.com/maps/d/u/1/embed?mid=1a9XtszUIsXY-WGWeqANwEeD_ga7zuuI&ehbc=2E312F",
-            28: "https://www.google.com/maps/d/u/1/embed?mid=1ER2Kx5uXyvPU2SEjtljjUmibWRUtat0&ehbc=2E312F",
-            29: "https://www.google.com/maps/d/u/1/embed?mid=1KA4xCl3IEVoTY5Td6xxBZBiJsDo4S4g&ehbc=2E312F",
-            30: "https://www.google.com/maps/d/u/1/embed?mid=1dZGruN6CXSpjxRdKcHmTWixo-nqjj2o&ehbc=2E312F",
-            31: "https://www.google.com/maps/d/u/1/embed?mid=1xuERRIcfXuT8pp5TlYVfpdTxecFooO0&ehbc=2E312F",
-            32: "https://www.google.com/maps/d/u/1/embed?mid=1Wm1Q_X3P_p32d2KytDznezNGOhRapXo&ehbc=2E312F",
-            33: "https://www.google.com/maps/d/u/1/embed?mid=1BCK0inql_XMXcpuGExBO5MDBRVkL_xY&ehbc=2E312F",
-            34: "https://www.google.com/maps/d/u/1/embed?mid=1tbyl24kdrBbEKgRluwrwbY89N_AqQ1M&ehbc=2E312F",
-            35: "https://www.google.com/maps/d/u/1/embed?mid=1h-yv9qg1djJMp1QEU1SnIK1jjljrPiY&ehbc=2E312F",
-            36: "https://www.google.com/maps/d/u/1/embed?mid=1Uco8HJ5ySvNaAgZRoIvicL0TnSB36ZE&ehbc=2E312F",
-            37: "https://www.google.com/maps/d/u/1/embed?mid=1Uco8HJ5ySvNaAgZRoIvicL0TnSB36ZE&ehbc=2E312F",
-            38: "https://www.google.com/maps/d/u/1/embed?mid=1P_Z3jFpQfHJbsOFFagIsDn_HFa76iro&ehbc=2E312F",
-            39: "https://www.google.com/maps/d/u/1/embed?mid=1z74iY4s9vHIKp5upGpBsTU_3ovXzcGg&ehbc=2E312F",
-            40: "https://www.google.com/maps/d/u/1/embed?mid=1i42fcCOVx_5JjZcB8AkiFx0br0t0ohQ&ehbc=2E312F",
-            41: "https://www.google.com/maps/d/u/1/embed?mid=1Yis1hUnfl91Y1Ur9irbUBo3KRCVtNGg&ehbc=2E312F",
-            42: "https://www.google.com/maps/d/u/1/embed?mid=1sSL3-uD8DOVSRiBT9jtDYK75Wrk1XOo&ehbc=2E312F",
-            43: "https://www.google.com/maps/d/u/1/embed?mid=1mgQSwmFs-KtSwoOM5opgrzqpSEWi0pc&ehbc=2E312F",
-            44: "https://www.google.com/maps/d/u/1/embed?mid=1I6yvJifeOD44w9utCkszaeGP0lrUQxE&ehbc=2E312F",
-            45: "https://www.google.com/maps/d/u/1/embed?mid=1M0kJqAGWzU4bqkTqvvue18gSRENRjOk&ehbc=2E312F",
-            46: "https://www.google.com/maps/d/u/1/embed?mid=1QtqtLLempdDMjxqFn4Ha8ejbISGYtOo&ehbc=2E312F",
-            47: "https://www.google.com/maps/d/u/1/embed?mid=1Y7ywCQbbp6tjcJl4rWssgk62DTFj4as&ehbc=2E312F",
-            48: "https://www.google.com/maps/d/u/1/embed?mid=1Bgp7QCM_GZW6bpSDJHW1mQuCO34kCKg&ehbc=2E312F",
-            49: "https://www.google.com/maps/d/u/1/embed?mid=1TpAUhtZErJpQwlAMq3idHG3YdbJ6Hv4&ehbc=2E312F",
-            50: "https://www.google.com/maps/d/u/1/embed?mid=1XuXWikGCHMuZWH3L4I2Ejwz4N74P1Rw&ehbc=2E312F",
-            51: "https://www.google.com/maps/d/u/1/embed?mid=1qj47VALuhLFEhLZi2Hmy4OVeHdVoM1A&ehbc=2E312F",
-            52: "https://www.google.com/maps/d/u/1/embed?mid=1IiWIp41DBPlDKo9o6r-gE2tWYXaqCHo&ehbc=2E312F",
-            53: "https://www.google.com/maps/d/u/1/embed?mid=1a6IFgplfg1coLQeDgrH-Y8G8lk-M3ac&ehbc=2E312F",
-            54: "https://www.google.com/maps/d/u/1/embed?mid=1BTxzGZ_W6W4gdbzWwHP3Qfl3pjj1lXQ&ehbc=2E312F",
-            55: "https://www.google.com/maps/d/u/1/embed?mid=17r3nIauwOqqR0QIXa4i0JTgZE24y9dY&ehbc=2E312F",
-            56: "https://www.google.com/maps/d/u/1/embed?mid=1VtoPvlMydKmIyyatg9CKthtUx7M85Js&ehbc=2E312F",
-            57: "https://www.google.com/maps/d/u/1/embed?mid=1BRixcytS3T1ECEWnucvMJn9kHzU5W6M&ehbc=2E312F",
-            58: "https://www.google.com/maps/d/u/1/embed?mid=1KzSUe5Fbh6iklEyyMNuC_X7bHeUl8rQ&ehbc=2E312F",
-            59: "https://www.google.com/maps/d/u/1/embed?mid=1QWgqLfmrymLUuWpfSPFUPd0oBuCHMgM&ehbc=2E312F",
-            60: "https://www.google.com/maps/d/u/1/embed?mid=1g4_Kas_K6errotc-Fr_pV3wos8yhs4A&ehbc=2E312F",
-            61: "https://www.google.com/maps/d/u/1/embed?mid=17R_o0yfpxDsNOwos-PFBdU7TaOdjyEM&ehbc=2E312F",
-            62: "https://www.google.com/maps/d/u/1/embed?mid=1qllkAS-pD72tcAqJ_ArpcJQdsPEbdSI&ehbc=2E312F",
-            63: "https://www.google.com/maps/d/u/1/embed?mid=1-g9E0uUaZymMe_ZbAif2HFqpAkC3MGo&ehbc=2E312F",
-            64: "https://www.google.com/maps/d/u/1/embed?mid=1EfJ0hcAMOU6tI74T-5_MMuJRIB0dZyg&ehbc=2E312F",
-            65: "https://www.google.com/maps/d/u/1/embed?mid=1NMHqyAX0DdvbvqHY7WOsDaKnp6EADcs&ehbc=2E312F",
-            66: "https://www.google.com/maps/d/u/1/embed?mid=1Pzq2zHcOR9ZgpoQSWMHSXpVM0HwYxKA&ehbc=2E312F",
-            67: "https://www.google.com/maps/d/u/1/embed?mid=1E8_x4CbD-EU3eGJo33fLChvVBImdWJk&ehbc=2E312F",
-            68: "https://www.google.com/maps/d/u/1/embed?mid=1WoThwCqN-yPiB8qtTT90HoplaCba5pk&ehbc=2E312F",
-            69: "https://www.google.com/maps/d/u/1/embed?mid=1hsfnfUtrD9ibnBQSR70Pb7ylHW1aGFg&ehbc=2E312F",
-            70: "https://www.google.com/maps/d/u/1/embed?mid=1RV96uuEKVk87fzexUjL2JOvIrN4uYnA&ehbc=2E312F",
-            71: "https://www.google.com/maps/d/u/1/embed?mid=1VurrwzX3WVMnYsluv4xFuTKLA9wRDnA&ehbc=2E312F",
-            72: "https://www.google.com/maps/d/u/1/embed?mid=1POFWkagA41zsDCPOuZDYQZty9AmQq7M&ehbc=2E312F",
-            73: "https://www.google.com/maps/d/u/1/embed?mid=1iO_cmGwSUd29CiwaqpHXtv_0VZEoyY0&ehbc=2E312F",
-            74: "https://www.google.com/maps/d/u/1/embed?mid=1NRGgv3ceJU7rxU6FCBeVk_KKAgcWxbs&ehbc=2E312F",
-            75: "https://www.google.com/maps/d/u/1/embed?mid=1rIDX6C6RW9rTaD-N9UwjXcBB4MPGHhw&ehbc=2E312F",
-            76: "https://www.google.com/maps/d/u/1/embed?mid=1XYu2uXqbFvHPrjoY78CzeTm1tx69NJI&ehbc=2E312F",
-            77: "https://www.google.com/maps/d/u/1/embed?mid=1NX-Ylip-EEp4OB25wzuWae0ASAmM5TE&ehbc=2E312F",
-            78: "https://www.google.com/maps/d/u/1/embed?mid=1TmXNFyj_vjHvdSvQBLvPmNksoWuIlDQ&ehbc=2E312F",
-            79: "https://www.google.com/maps/d/u/1/embed?mid=1eIe0RmmX-ksRZ738brvfnCpr0Y8KX2I&ehbc=2E312F",
-            80: "https://www.google.com/maps/d/u/1/embed?mid=11CCsKOjxWOjpkrGjLbleYPYn1dR0JUU&ehbc=2E312F"
-            81: "https://www.google.com/maps/d/u/1/embed?mid=1wmj9vztM3TYwEiOiC03y3L-BzyLWVio&ehbc=2E312F",
-  	    82: "https://www.google.com/maps/d/u/1/embed?mid=1x7f3s2BKxPKEuk5FcO8uUGY_xcH3i2M&ehbc=2E312F",
-   	    83: "https://www.google.com/maps/d/u/1/embed?mid=1ra2taTUvl1xzHgza97zP107co-8rQpk&ehbc=2E312F",
-   	    84: "https://www.google.com/maps/d/u/1/embed?mid=14ioZojiODqnemGkP689ewpejCEaWFCg&ehbc=2E312F",
-  	    85: "https://www.google.com/maps/d/u/1/embed?mid=1nXTGBNUHj819vD9KqHJSOQFPOZ-r9p8&ehbc=2E312F",
-    	    86: "https://www.google.com/maps/d/u/1/embed?mid=1FLhw1ylszq1cNyYR-skPHwabjh31hoU&ehbc=2E312F",
-    	    87: "https://www.google.com/maps/d/u/1/embed?mid=1A5vfh5t7kmyckKVyGVHRGsTZh8JTR3Y&ehbc=2E312F",
-   	    88: "https://www.google.com/maps/d/u/1/embed?mid=1cysB6lAkdDqJ5wWTZiBKj-xZqvZdF2A&ehbc=2E312F",
-    	    89: "https://www.google.com/maps/d/u/1/embed?mid=1iW5MzewkNibhPmXnOURO4ZQ_q_E5y2s&ehbc=2E312F",
-       	    90: "https://www.google.com/maps/d/u/1/embed?mid=1iW5MzewkNibhPmXnOURO4ZQ_q_E5y2s&ehbc=2E313F",
-    	    91: "https://www.google.com/maps/d/u/1/embed?mid=1iW5MzewkNibhPmXnOURO4ZQ_q_E5y2s&ehbc=2E314F",
-    	    92: "https://www.google.com/maps/d/u/1/embed?mid=1iW5MzewkNibhPmXnOURO4ZQ_q_E5y2s&ehbc=2E315F",
-   	    93: "https://www.google.com/maps/d/u/1/embed?mid=1iW5MzewkNibhPmXnOURO4ZQ_q_E5y2s&ehbc=2E316F",
-    	    94: "https://www.google.com/maps/d/u/1/embed?mid=1iW5MzewkNibhPmXnOURO4ZQ_q_E5y2s&ehbc=2E317F",
-    	    95: "https://www.google.com/maps/d/embed?mid=13lSx482sYMq_c2zOnEejc6nJUDoxvGo&ehbc=2E312F",
-   	    96: "https://www.google.com/maps/d/embed?mid=1jEohibDRDBuv6zmil5exxbz6wEnR-XI&ehbc=2E312F",
-   	    97: "https://www.google.com/maps/d/embed?mid=1p3uEsRJiBxRr09J7VcVvgRGtWtjZ7Lc&ehbc=2E312F",
- 	    98: "https://www.google.com/maps/d/embed?mid=1M9_3ktRv6A65YlmwwzdVAFGP3Sfia-E&ehbc=2E312F",
- 	    99: "https://www.google.com/maps/d/embed?mid=1bc-iTpoyJDIdHRItH8uDGgsba9367fc&ehbc=2E312F",
-   	    100: "https://www.google.com/maps/d/embed?mid=1NpHHO49jsF3pOQL4non4TlGEinBCgAo&ehbc=2E312F",
-    	    101: "https://www.google.com/maps/d/embed?mid=1azcqiYNNuFWLyYGvH3iVr3n5VyKQZCQ&ehbc=2E312F",
-    	    102: "https://www.google.com/maps/d/embed?mid=1w2RTc00bAuz_2OGFHNfUqv73qN7gcBU&ehbc=2E312F",
-    	    103: "https://www.google.com/maps/d/embed?mid=1YMWflZe-0gsP6IKiVpDIGHV6oWYVPtY&ehbc=2E312F",
-    	    104: "https://www.google.com/maps/d/embed?mid=1HzDQkjOBUCHydLwCPqC34LKlsp8H7yY&ehbc=2E312F",
-    	    105: "https://www.google.com/maps/d/embed?mid=1IzvE6jXSiYnpyj0JAmuCSonA7lLSEic&ehbc=2E312F",
-    	    106: "https://www.google.com/maps/d/embed?mid=1m0uLwV_QT4l2QesunWHFinoOBRyAVkQ&ehbc=2E312F",
-    	    107: "https://www.google.com/maps/d/embed?mid=1aoLDO_cmlglJCIvyBj_rtsopu0ZqGBE&ehbc=2E312F",
-    	    108: "https://www.google.com/maps/d/embed?mid=1tYN2c8jCkJS2q5_DsEjFOsUWKfC1YNI&ehbc=2E312F",
-    	    109: "https://www.google.com/maps/d/embed?mid=1Bl65Xi3J92k9LD3MkIua8diF-0CNPQ4&ehbc=2E312F",
-    	    110: "https://www.google.com/maps/d/embed?mid=15XGL7La7OAaT13bsHpo-nI1Pmo8WI00&ehbc=2E312F",
-    	    111: "https://www.google.com/maps/d/embed?mid=1K24IxBzLOOPpjh8WSoffjymt0eGv5HY&ehbc=2E312F",
-    	    112: "https://www.google.com/maps/d/embed?mid=1Nh0iQl8p_26SJ46NfHfQG13eDnh199s&ehbc=2E312F",
-    	    113: "https://www.google.com/maps/d/embed?mid=1RUvu8FTLKHbqY-7pLBEMoBg6ZYgSK7Y&ehbc=2E312F",
-    	    114: "https://www.google.com/maps/d/embed?mid=1XD22Q1MhcEs2vevseEIeMKeZy3lc5d8&ehbc=2E312F",
-    	    115: "https://www.google.com/maps/d/embed?mid=1eWe2GnZq-m-I9Vozea0R92IzeGpAFuw&ehbc=2E312F",
-    	    116: "https://www.google.com/maps/d/embed?mid=1GXqzNCbstXwd1eH9rDYF9wnQCC1Qh8g&ehbc=2E312F",
-    	    117: "https://www.google.com/maps/d/embed?mid=1oZ-4T0r_tvRNxNql4kw4b3O2URQEMmY&ehbc=2E312F",
-    	    118: "https://www.google.com/maps/d/embed?mid=1UiqBDH2w_6Qtr3DFVRl23iUbEqEU-M8&ehbc=2E312F"
-	};
+        // 모달 외부 클릭 시 닫기
+        window.onclick = function (event) {
+            const registrationModal = document.getElementById('registrationModal');
+            const cancelModal = document.getElementById('cancelModal');
+            const adminModal = document.getElementById('adminModal');
+            const userManagementModal = document.getElementById('userManagementModal');
+            const zoneManagementModal = document.getElementById('zoneManagementModal');
+            const statsModal = document.getElementById('statsModal');
 
-        // 구역 정보 데이터
-        const zoneData = {
-            1: "정정란 미용실",
-            2: "박여자 자매댁",
-            3: "훈성 AB",
-            4: "한신 빌라",
-            5: "낙원 빌라",
-            6: "황금 아트빌",
-            7: "이종호 형제댁",
-            8: "우진 빌라",
-            9: "삼정빌라",
-            10: "HS팰리스",
-            11: "태양빌라",
-            12: "(구)제일 마트",
-            13: "SK주유소",
-            14: "(구) 미소 건강원(우측)",
-            15: "(구) 미소 건강원(좌측)",
-            16: "이선아 부동산",
-            17: "한진 주택",
-            18: "반석식품, 북한산 캐슬",
-            19: "보령주택(좌측)",
-            20: "송광맨션(우측)",
-            21: "청명대",
-            22: "살렘교회",
-            23: "연신시티, 공영주차장옆",
-            24: "UN빌라",
-            25: "(구)연신마트 -> 이마트24 편의점",
-            26: "성암빌라(우측)",
-            27: "성암빌라(좌측)",
-            28: "백마 빌리지",
-            29: "MS연립",
-            30: "예은빌, 건우주택",
-            31: "백마 노블레스텔",
-            32: "서부 중앙교회",
-            33: "삼흥아파트",
-            34: "연서시장(메트로 앞)",
-            35: "연서시장",
-            36: "메트로 타워1",
-            37: "메트로 타워2",
-            38: "(구)흥창물산",
-            39: "세마루(좌측)",
-            40: "세마루(우측)",
-            41: "미건빌라",
-            42: "젤라 빌리지",
-            43: "영광수퍼",
-            44: "연신내 한의원",
-            45: "(구)거성 건축 설비",
-            46: "삼계랑오리랑",
-            47: "지선 미용실",
-            48: "청운1,2,3,",
-            49: "크로바 문구(연신중 정문 앞)",
-            50: "이태준김재민 내과의원",
-            51: "GS 25시",
-            52: "연신중학교 밑",
-            53: "서부 농협",
-            54: "현대 (구)불광 주유소",
-            55: "삼보 약국",
-            56: "대창 아파트 101동",
-            57: "대창 아파트 102,103동",
-            58: "(구) 세종피아노",
-            59: "송광빌라",
-            60: "중앙빌라",
-            61: "흥영빌라",
-            62: "서강 아파트",
-            63: "삼성 쉐르빌",
-            64: "불광중학교1",
-            65: "불광중학교2",
-            66: "가든빌라",
-            67: "수정빌라",
-            68: "진양빌라",
-            69: "우리동네키움센터(구 YBM)",
-            70: "건우빌라",
-            71: "불광 어린이집",
-            72: "연천초등학교",
-            73: "이화마트",
-            74: "창덕주택",
-            75: "가든23차",
-            76: "(신)리치에비뉴",
-            77: "광서연립",
-            78: "구립도서관",
-            79: "미르라이프(도서관 하)",
-            80: "도시가스",
-            81: "가위소리",
-            82: "(구)은혜초교 1",
-            83: "(구)은혜초교 2",
-            84: "청우맨션",
-            85: "(구)노계순 자매댁 -> (신) 샹그리라",
-            86: "진광맨션",
-            87: "(구)현대마트 -> (현)CU편의점",
-            88: "(구)프라임인 서울호텔 -> (신)우경촌",
-            89: "힐스테이트 7차 (101,102동)",
-            90: "힐스테이트 7차 (103-105동)",
-            91: "힐스테이트 7차 (106-108동)",
-            92: "힐스테이트 7차 (109-111동)",
-            93: "힐스테이트 7차 (112-114동)",
-            94: "힐스테이트 7차 (115-116동)",
-            95: "문 치과",
-            96: "(구)연세선 학원 -> (신) 우리동네키움센터",
-            97: "한진 세탁소",
-            98: "메밀마을",
-            99: "emart24 (구)어울림마트",
-            100: "만민 베스트빌",
-            101: "만세 부동산",
-            102: "거장 노블레스",
-            103: "파크사이드빌",
-            104: "유니텔(UNITEL)",
-            105: "다리원(중국집)",
-            106: "맹구네 드럼통",
-            107: "모던하우스",
-            108: "(신) 대조한의원",
-            109: "할리스 커피",
-            110: "(신) 유성하이빌",
-            111: "새마을금고",
-            112: "범우빌라",
-            113: "삿뽀로우동집",
-            114: "제일은행",
-            115: "신한은행",
-            116: "크로커다일",
-            117: "(구)삼성생명",
-            118: "삼성생명(최명숙 자매댁)",
-            119: "범서쇼핑",
-            120: "구공탄 곱창",
-            121: "종로약국",
-            122: "종로약국(노인복지센터)",
-            123: "금호빌라",
-            124: "불광2동주민센터",
-            125: "이삭토스트",
-            126: "파이브시즌",
-            127: "세븐일레븐",
-            128: "불광보건소",
-            129: "크로바주택",
-            130: "불광2동지구대",
-            131: "은평경찰서",
-            132: "연신초등학교",
-            133: "연천중학교",
-            134: "금강프라임빌",
-            135: "새장골경로당",
-            136: "혜성문구",
-            137: "엘지아파트",
-            138: "새장골 어린이 공원",
-            139: "부성세탁소",
-            140: "스피트메이트",
-            141: "GS25",
-            142: "다윈하이빌",
-            143: "현대타운",
-            144: "하연하우스",
-            145: "스카이필튼",
-            146: "가인리치빌",
-            147: "장미쉐르빌",
-            148: "예향어린이집",
-            149: "세명컴퓨터 고등학교",
-            150: "하얀빌라",
-            151: "남양구르미 아파트",
-            152: "파파존스 피자",
-            153: "뉴타운 폭포동 (408-409)",
-            154: "뉴타운 폭포동 (410-412)",
-            155: "뉴타운 폭포동 (413-415)",
-            156: "뉴타운 폭포동 (416-419)",
-            157: "뉴타운 폭포동 (420-422)",
-            158: "뉴타운 폭포동 (423-425)",
-            159: "뉴타운 폭포동 (426-428)",
-            160: "뉴타운 진관사 (501-503)",
-            161: "뉴타운 진관사 (504-507)",
-            162: "뉴타운 진관사 (508-511)",
-            163: "뉴타운 진관사 (512-515)",
-            164: "뉴타운 진관사 (516-518)",
-            165: "뉴타운 진관사 (519-521)",
-            166: "한옥마을1",
-            167: "한옥마을2",
-            168: "한옥마을3",
-            169: "한옥마을4",
-            170: "한옥마을5",
-            171: "은뜨락 (101-103)",
-            172: "뉴타운 (112-115)",
-            173: "뉴타운 (1101-1102)",
-            174: "뉴타운 (1103-1105)",
-            175: "뉴타운 (1106-1110)"
-        };
-
-        for (let i = 176; i <= 268; i++) {
-            zoneData[i] = "추후 추가 예정";
-        }
-
-        // 개인 구역 데이터
-        const personalZoneData = {
-            90: "김은희",
-            91: "박현숙",
-            92: "정종민",
-            93: "이영재",
-            153: "이아영",
-            154: "김인기",
-            156: "강승희",
-            158: "김옥순",
-            159: "이지애",
-            160: "이현석",
-            162: "김은희",
-            163: "이현석",
-            164: "이영재",
-            165: "강승희",
-            171: "정종민",
-            173: "정종민",
-            174: "정종민",
-            175: "정종민",
-            268: "권수진"
-        };
-
-        // 가구수 데이터
-        const householdData = {
-            1: 174,
-            2: 153,
-            3: 147,
-            4: 190,
-            5: 137,
-            6: 114,
-            7: 152,
-            8: 219,
-            9: 152,
-            10: 136,
-            11: 112,
-            12: 84,
-            13: 177,
-            14: 167,
-            15: 172,
-            16: 153,
-            17: 196,
-            18: 168,
-            19: 145,
-            20: 172,
-            21: 149,
-            22: 168,
-            23: 146,
-            24: 158,
-            25: 178,
-            26: 128,
-            27: 97,
-            28: 139,
-            29: 83,
-            30: 176,
-            31: 187,
-            32: 237,
-            33: 451,
-            34: 49,
-            35: 73,
-            36: 148,
-            37: 69,
-            38: 58,
-            39: 188,
-            40: 197,
-            41: 110,
-            42: 123,
-            43: 146,
-            44: 77,
-            45: 118,
-            46: 92,
-            47: 139,
-            48: 106,
-            49: 172,
-            50: 154,
-            51: 73,
-            52: 124,
-            53: 181,
-            54: 247,
-            55: 174,
-            56: 61,
-            57: 107,
-            58: 91,
-            59: 147,
-            60: 108,
-            61: 133,
-            62: 135,
-            63: 148,
-            64: 129,
-            65: 97,
-            66: 158,
-            67: 115,
-            68: 164,
-            69: 183,
-            70: 226,
-            71: 218,
-            72: 158,
-            73: 175,
-            74: 141,
-            75: 143,
-            76: 153,
-            77: 116,
-            78: 196,
-            79: 116,
-            80: 236,
-            81: 155,
-            82: 157,
-            83: 141,
-            84: 155,
-            85: 148,
-            86: 109,
-            87: 260,
-            88: 173,
-            89: 211,
-            90: 207,
-            91: 169,
-            92: 247,
-            93: 117,
-            94: 188,
-            95: 132,
-            96: 200,
-            97: 163,
-            98: 183,
-            99: 145,
-            100: 153,
-            101: 171,
-            102: 152,
-            103: 162,
-            104: 150,
-            105: 131,
-            106: 125,
-            107: 138,
-            108: 180,
-            109: 231,
-            110: 142,
-            111: 156,
-            112: 195,
-            113: 184,
-            114: 826,
-            115: 176,
-            116: 412,
-            117: 96,
-            118: 110,
-            119: 167,
-            120: 204,
-            121: 136,
-            122: 162,
-            123: 182,
-            124: 98,
-            125: 177,
-            126: 146,
-            127: 160,
-            128: 208,
-            129: 166,
-            130: 190,
-            131: 185,
-            132: 181,
-            133: 196,
-            134: 236,
-            135: 152,
-            136: 229,
-            137: 166,
-            138: 173,
-            139: 89,
-            140: 179,
-            141: 113,
-            142: 134,
-            143: 174,
-            144: 106,
-            145: 179,
-            146: 194,
-            147: 141,
-            148: 140,
-            149: 144,
-            150: 135,
-            151: 176,
-            152: 167,
-            153: 129,
-            154: 131,
-            155: 97,
-            156: 91,
-            157: 102,
-            158: 129,
-            159: 126,
-            160: 81,
-            161: 108,
-            162: 114,
-            163: 77,
-            164: 67,
-            165: 53,
-            166: 44,
-            167: 34,
-            168: 30,
-            169: 150,
-            170: 71,
-            171: 350,
-            172: 162,
-            173: 143,
-            174: 164,
-            175: 126,
-            222: 27,
-            223: 66,
-            224: 38,
-            225: 62,
-            226: 90,
-            227: 47,
-            228: 71,
-            229: 67,
-            230: 74,
-            231: 58,
-            232: 49,
-            233: 84,
-            234: 36,
-            235: 72,
-            236: 57,
-            237: 46,
-            238: 77,
-            239: 42,
-            240: 77,
-            241: 86,
-            242: 52,
-            243: 59,
-            244: 42,
-            245: 281,
-            246: 290,
-            247: 63,
-            266: 322,
-            267: 121,
-            268: 126
-        };
-
-        // 구역 길이 데이터 (단위: m)
-        const zoneLengthData = {
-            1: 567,
-            2: 532,
-            3: 305,
-            4: 626,
-            5: 364,
-            6: 276,
-            7: 458,
-            8: 452,
-            9: 486,
-            10: 271,
-            11: 384,
-            12: 267,
-            13: 514,
-            14: 391,
-            15: 517,
-            16: 436,
-            17: 599,
-            18: 499,
-            19: 317,
-            20: 313,
-            21: 380,
-            22: 518,
-            23: 350,
-            24: 374,
-            25: 399,
-            26: 412,
-            27: 425,
-            28: 410,
-            29: 232,
-            30: 413,
-            31: 353,
-            32: 810,
-            33: 496,
-            34: 274,
-            35: 212,
-            38: 244,
-            39: 492,
-            40: 420,
-            41: 252,
-            42: 279,
-            43: 399,
-            44: 428,
-            45: 273,
-            46: 375,
-            47: 391,
-            48: 519,
-            49: 573,
-            50: 532,
-            51: 422,
-            52: 394,
-            53: 471,
-            54: 856,
-            55: 506,
-            58: 210,
-            59: 329,
-            60: 324,
-            61: 292,
-            62: 383,
-            63: 259,
-            64: 424,
-            65: 648,
-            66: 297,
-            67: 397,
-            68: 402,
-            69: 450,
-            70: 561,
-            71: 534,
-            72: 440,
-            73: 376,
-            74: 292,
-            75: 308,
-            76: 340,
-            77: 317,
-            78: 435,
-            79: 345,
-	    80: 665
-	};
-
-        // 자원봉사자 데이터
-        const volunteers = {
-            형제: ["김기권", "김상연", "김은석", "김인기", "김철호", "박상익", "박원준", "박종화", "박진걸", "박희범", "박희종", "사영환", "서기원", "서정길", "양재은", "양진우", "이목영", "이선", "이종호", "이현석", "임종목", "임현수", "전종경", "전진해", "전필용", "정순도", "정종민", "정진수", "정해균"],
-            자매: ["강성임", "강승미", "강승희", "곽순호", "권영미", "권영숙", "권수진", "김경애", "김귀자", "김동임", "김복실", "김솔", "김영아", "김영애", "김영순", "김옥순A", "김옥순B", "김은희", "김인순", "김인희", "김정숙", "김춘조", "김희재", "문설형", "민규희", "박선아", "박순례", "박여자", "박은숙", "박현숙", "백경자", "변현숙", "서광옥", "서혜경", "손귀선", "송옥순", "신부지", "신연순", "심자인", "안영자", "양동순", "양지예", "양지은", "연선미", "용옥자", "유민지", "유순지", "우옥희", "이경순", "이경현", "이금덕", "이금자", "이명윤", "이병임", "이아영", "이애선", "이영자", "이영재", "이재희", "이지애", "이채은", "이화숙", "이희숙", "이희열", "임규환", "임귀녀", "임순자", "임애진", "임여진", "장평원", "정송은", "정옥연", "조금순", "조명자", "조인순", "최건자", "최명수", "최문숙", "최연진", "홍명순", "홍은희"],
-            자녀: ["박시우","양다솜","이채은"],
-            집단: ["동부집단","서부집단","남부집단","북부집단","연서집단","연신내집단"],
-            기타: []
-        };
-
-        // 기록 불러오기
-        async function loadHistory() {
-            const date = document.getElementById('historyDate').value;
-            const doc = await db.collection('history').doc(date).get();
-            
-            if (doc.exists) {
-                assignments = doc.data().zones;
-                assignedPeople = [].concat(...Object.values(assignments));
-            } else {
-                assignments = {};
-                assignedPeople = [];
+            if (event.target === registrationModal) {
+                closeRegistrationModal();
             }
-            initZones();
+            if (event.target === cancelModal) {
+                closeCancelModal();
+            }
+            if (event.target === adminModal) {
+                closeAdminModal();
+            }
+            if (event.target === userManagementModal) {
+                closeUserManagementModal();
+            }
+            if (event.target === zoneManagementModal) {
+                closeZoneManagementModal();
+            }
+            if (event.target === statsModal) {
+                closeStatsModal();
+            }
+        };
+
+        // 관리자 모달 닫기 (임의 배정/취소 모달)
+        function closeAdminModal() {
+            document.getElementById('adminModal').style.display = 'none';
         }
-    </script>
+
+        // 관리자 액션 실행 (기존 코드, 필요 시 구현)
+        function executeAdminAction() {
+            // 구현 필요 (기존 로직)
+            alert('관리자 액션 실행 (구현 필요)');
+        }
+
+        // 관리자 폼 초기화
+        function resetAdminForm() {
+            // 구현 필요
+            alert('폼 초기화 (구현 필요)');
+        }</script>
 </body>
 </html>
