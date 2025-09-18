@@ -1,102 +1,155 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-<title>지도 모달</title>
-<style>
-  /* 모달 배경 스타일 */
-  .modal {
-    display: none; /* 기본적으로 숨김 */
-    position: fixed; /* 화면에 고정 */
-    z-index: 1; /* 다른 요소들 위에 표시 */
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto; /* 스크롤이 필요한 경우 자동 생성 */
-    background-color: rgba(0,0,0,0.5); /* 반투명 검은 배경 */
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>반응형 지도 모달</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+        }
 
-  /* 모달 콘텐츠 스타일 */
-  .modal-content {
-    background-color: #fefefe;
-    margin: 10% auto; /* 상단에서 10% 아래, 가운데 정렬 */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 700px; /* 최대 너비 지정 */
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
-  }
+        /* 모달 배경 스타일 */
+        .modal {
+            display: none; /* 기본적으로 숨김 */
+            position: fixed; /* 화면에 고정 */
+            z-index: 1000; /* 다른 요소들 위에 표시 */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* 스크롤이 필요한 경우 자동 생성 */
+            background-color: rgba(0,0,0,0.6); /* 반투명 검은 배경 */
+            -webkit-overflow-scrolling: touch; /* iOS에서 부드러운 스크롤 */
+        }
 
-  /* 닫기 버튼 스타일 */
-  .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-  }
+        /* 모달 콘텐츠 스타일 */
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: 15% auto; /* 기본 마진 */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%; /* 화면 너비의 90% 사용 */
+            max-width: 680px; /* 최대 너비 지정 */
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-radius: 8px; /* 모서리를 둥글게 */
+            -webkit-animation-name: animatetop;
+            -webkit-animation-duration: 0.4s;
+            animation-name: animatetop;
+            animation-duration: 0.4s
+        }
 
-  .close:hover,
-  .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-  }
+        /* 모달 나타나는 애니메이션 */
+        @-webkit-keyframes animatetop {
+            from {top:-300px; opacity:0} 
+            to {top:0; opacity:1}
+        }
 
-  /* 지도 iframe 스타일 */
-  .map-iframe {
-    width: 100%;
-    height: 480px;
-    border: none;
-  }
-  
-  /* 지도 열기 버튼 스타일 */
-  #openModalBtn {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
-</style>
+        @keyframes animatetop {
+            from {top:-300px; opacity:0}
+            to {top:0; opacity:1}
+        }
+
+        /* 닫기 버튼 스타일 */
+        .close {
+            color: #555;
+            position: absolute; /* 콘텐츠 영역 기준으로 위치 지정 */
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
+        /* 지도 iframe을 감싸는 컨테이너 */
+        .map-container {
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            padding-top: 75%; /* 4:3 비율 (높이/너비 * 100) */
+        }
+        
+        /* iframe 스타일 */
+        .map-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* 지도 열기 버튼 스타일 */
+        #openModalBtn {
+            padding: 12px 25px;
+            font-size: 18px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        /* 화면이 768px보다 작을 때 (모바일 기기) */
+        @media screen and (max-width: 768px) {
+            .modal-content {
+                width: 95%; /* 모바일에서 너비를 더 넓게 */
+                margin: 20% auto; /* 상단 마진 조정 */
+            }
+        }
+
+    </style>
 </head>
 <body>
 
-<h2>지도</h2>
-<p>지도</p>
+    <h2>지도</h2>
+    <p>지도</p>
 
-<button id="openModalBtn">🗺️ 지도 열기</button>
+    <button id="openModalBtn">지도 보기</button>
 
-<div id="myModal" class="modal">
+    <div id="myModal" class="modal">
 
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <h3>Google 지도</h3>
-    <iframe src="https://www.google.com/maps/d/embed?mid=1E9axQXVWgxEkbBLgORPCpGOAiXOhbKs&ehbc=2E312F" width="640" height="480"></iframe>
-  </div>
+        <div class="modal-content">
+            <span class="close" title="닫기">×</span>
+            <h3>Google 지도</h3>
+            <div class="map-container">
+                <iframe src="https://www.google.com/maps/d/embed?mid=1E9axQXVWgxEkbBLgORPCpGOAiXOhbKs&ehbc=2E312F" width="640" height="480"></iframe>
+            </div>
+        </div>
 
-</div>
+    </div>
 
-<script>
-// 필요한 HTML 요소들을 가져옵니다.
-var modal = document.getElementById("myModal");
-var btn = document.getElementById("openModalBtn");
-var span = document.getElementsByClassName("close")[0];
+    <script>
+        // 필요한 HTML 요소들을 가져옵니다.
+        const modal = document.getElementById("myModal");
+        const btn = document.getElementById("openModalBtn");
+        const span = document.getElementsByClassName("close")[0];
 
-// 버튼을 클릭하면 모달을 엽니다.
-btn.onclick = function() {
-  modal.style.display = "block";
-}
+        // 버튼을 클릭하면 모달을 엽니다.
+        btn.onclick = () => {
+            modal.style.display = "block";
+        }
 
-// <span> (x)을 클릭하면 모달을 닫습니다.
-span.onclick = function() {
-  modal.style.display = "none";
-}
+        // <span> (x)을 클릭하면 모달을 닫습니다.
+        span.onclick = () => {
+            modal.style.display = "none";
+        }
 
-// 사용자가 모달 외부를 클릭하면 모달을 닫습니다.
-window.onclick = function(event) {
-  if (event.target == modal) {
-    modal.style.display = "none";
-  }
-}
-</script>
+        // 사용자가 모달 외부를 클릭하면 모달을 닫습니다.
+        window.onclick = (event) => {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
 
 </body>
 </html>
